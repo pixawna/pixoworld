@@ -1,6 +1,6 @@
-# Pixo — a PageLove companion template
+# Pixo, a PageLove companion template
 
-Build a tiny digital companion that helps people focus, remember their day, and care for themselves—without a database, framework, or account system.
+Build a tiny digital companion that helps people focus, remember their day and care for themselves—without a database, framework, or account system.
 
 [Try the live Pixo companion](https://heat-flip-3234.onpagelove.com/) · [Read the template guide](./TEMPLATE_GUIDE.md)
 
@@ -8,7 +8,7 @@ Build a tiny digital companion that helps people focus, remember their day, and 
 
 ## Why this template is useful
 
-Pixo gives makers a polished starting point for study buddies, wellness companions, focus tools, classroom helpers, and gentle personal dashboards. A visitor’s tasks, check-ins, preferences, progress, and reminders are saved as private PageLove session state—no backend code or database setup required.
+Pixo gives makers a polished starting point for study buddies, wellness companions, focus tools, classroom helpers and gentle personal dashboards. A visitor’s tasks, check-ins, preferences, progress and reminders are saved as private PageLove session state—no backend code or database setup required.
 
 Included out of the box:
 
