@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Pixo is a tiny digital companion who remembers you, helps you focus, and grows alongside you."
+    />
+    <meta name="theme-color" content="#f7f3ea" />
+    <title>Pixo — your tiny work companion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module">
+      try {
+        const capabilities = await fetch(window.location.href, {
+          method: "OPTIONS",
+          headers: { Accept: "multipart/mixed" },
+        });
+        if (capabilities.headers.get("content-type")?.includes("multipart/mixed")) {
+          await import("https://pagelove.github.io/beta-js/pagelove.mjs");
+        }
+      } catch (_) {
+        // Browser-private persistence remains available when host capabilities are unavailable.
+      }
+    </script>
+    <script src="./app.js?v=2" defer></script>
+  </head>
+  <body>
+    <div class="ambient ambient--one"></div>
+    <div class="ambient ambient--two"></div>
+
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Primary navigation">
+        <a class="brand" href="#home" aria-label="Pixo home">
+          <span class="brand__mark" aria-hidden="true">
+            <span></span><span></span>
+          </span>
+          <span class="brand__name">pixo</span>
+        </a>
+
+        <nav class="nav-list">
+          <a class="nav-item is-active" href="#home" aria-current="page">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5v8a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+            <span>Home</span>
+          </a>
+          <a class="nav-item" href="#focus">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2M9 2h6"/></svg>
+            <span>Focus</span>
+          </a>
+          <a class="nav-item" href="#today">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>
+            <span>Today</span>
+          </a>
+          <a class="nav-item" href="#memories">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M8 20a3 3 0 0 1 0-6h11M9 8h6"/></svg>
+            <span>Memories</span>
+          </a>
+        </nav>
+
+        <div class="sidebar__footer">
+          <button class="icon-button" id="settings-button" type="button" aria-label="Open settings">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.08A1.7 1.7 0 0 0 8.55 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.08A1.7 1.7 0 0 0 4.6 8.55a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.08A1.7 1.7 0 0 0 15.45 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.15.38.36.73.65 1a1.7 1.7 0 0 0 1.05.4H21v4h-.08A1.7 1.7 0 0 0 19.4 15z"/></svg>
+          </button>
+          <div class="sync-status" id="sync-status" aria-live="polite">
+            <span class="sync-status__dot"></span>
+            <span>Local preview</span>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main" id="home">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow" id="current-date">Thursday, September 4</p>
+            <h1>Good <span id="day-part">morning</span>, <span id="greeting-name">friend</span>.</h1>
+          </div>
+          <div class="topbar__actions">
+            <button class="quiet-button" id="sound-toggle" type="button" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10v4h3l4 3V7L8 10zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>
+              <span>Quiet room</span>
+            </button>
+            <button class="avatar" id="profile-button" type="button" aria-label="Edit your profile">P</button>
+          </div>
+        </header>
+
+        <section class="companion-card" aria-labelledby="companion-title">
+          <div class="companion-card__copy">
+            <div class="status-pill"><span></span> Pixo is here</div>
+            <h2 id="companion-title">Let’s make today<br />feel a little lighter.</h2>
+            <p id="pixo-message">I’ve got the small things. You bring the big ideas.</p>
+            <button class="primary-button" id="begin-focus" type="button">
+              Begin a focus session
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+          </div>
+
+          <div class="pixo-scene" aria-label="Pixo, your digital companion">
+            <div class="speech-bubble" id="speech-bubble">You’ve got this!</div>
+            <div class="spark spark--one">✦</div>
+            <div class="spark spark--two">✦</div>
+            <div class="plant" aria-hidden="true">
+              <span class="plant__leaf plant__leaf--one"></span>
+              <span class="plant__leaf plant__leaf--two"></span>
+              <span class="plant__leaf plant__leaf--three"></span>
+              <span class="plant__pot"></span>
+            </div>
+            <div class="pixo" id="pixo-character" data-mood="happy" aria-hidden="true">
+              <div class="pixo__antenna"><span></span></div>
+              <div class="pixo__ear pixo__ear--left"></div>
+              <div class="pixo__ear pixo__ear--right"></div>
+              <div class="pixo__head">
+                <span class="pixo__shine"></span>
+                <div class="pixo__face">
+                  <span class="pixo__eye pixo__eye--left"></span>
+                  <span class="pixo__eye pixo__eye--right"></span>
+                  <span class="pixo__mouth"></span>
+                </div>
+              </div>
+              <div class="pixo__body"><span class="pixo__heart">♥</span></div>
+              <div class="pixo__arm pixo__arm--left"></div>
+              <div class="pixo__arm pixo__arm--right"></div>
+              <div class="pixo__foot pixo__foot--left"></div>
+              <div class="pixo__foot pixo__foot--right"></div>
+            </div>
+            <div class="scene-shadow"></div>
+          </div>
+
+          <div class="level-chip">
+            <span class="level-chip__icon">✦</span>
+            <span><strong>Level <span id="level-number">1</span></strong><small><span id="xp-number">35</span> / 100 XP</small></span>
+          </div>
+        </section>
+
+        <section class="dashboard-grid">
+          <article class="panel focus-panel" id="focus">
+            <div class="panel__header">
+              <div>
+                <span class="section-kicker">Focus with Pixo</span>
+                <h2>One thing at a time.</h2>
+              </div>
+              <button class="icon-button icon-button--small" id="timer-reset" type="button" aria-label="Reset timer">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.34-5.66L4 8.68M4 4v4.68h4.68"/></svg>
+              </button>
+            </div>
+
+            <div class="timer-wrap">
+              <div class="timer-ring" id="timer-ring" style="--progress: 0deg">
+                <div class="timer-ring__inner">
+                  <span class="timer-mode" id="timer-mode-label">Focus</span>
+                  <strong id="timer-display">25:00</strong>
+                  <span class="timer-note">Pixo is right here</span>
+                </div>
+              </div>
+              <button class="timer-button" id="timer-toggle" type="button">
+                <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z"/></svg>
+                <svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
+                <span>Start focus</span>
+              </button>
+            </div>
+
+            <div class="focus-stats">
+              <div><strong id="sessions-today">0</strong><span>sessions today</span></div>
+              <div><strong id="minutes-today">0m</strong><span>deep work</span></div>
+              <div><strong id="focus-streak">1</strong><span>day streak</span></div>
+            </div>
+          </article>
+
+          <article class="panel tasks-panel" id="today">
+            <div class="panel__header">
+              <div>
+                <span class="section-kicker">Today</span>
+                <h2>Your gentle plan</h2>
+              </div>
+              <span class="task-count" id="task-count">0 / 3</span>
+            </div>
+
+            <ul class="task-list" id="task-list">
+              <li class="task" id="task-welcome" data-task-id="welcome">
+                <label>
+                  <input type="checkbox" />
+                  <span class="custom-check"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10 3 3 7-7"/></svg></span>
+                  <span class="task__text">Choose today’s main thing</span>
+                </label>
+                <button class="task__delete" type="button" aria-label="Delete task">×</button>
+              </li>
+              <li class="task" id="task-water" data-task-id="water">
+                <label>
+                  <input type="checkbox" />
+                  <span class="custom-check"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10 3 3 7-7"/></svg></span>
+                  <span class="task__text">Drink a glass of water</span>
+                </label>
+                <button class="task__delete" type="button" aria-label="Delete task">×</button>
+              </li>
+              <li class="task" id="task-stretch" data-task-id="stretch">
+                <label>
+                  <input type="checkbox" />
+                  <span class="custom-check"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10 3 3 7-7"/></svg></span>
+                  <span class="task__text">Take a quiet stretch break</span>
+                </label>
+                <button class="task__delete" type="button" aria-label="Delete task">×</button>
+              </li>
+            </ul>
+
+            <form class="task-form" id="task-form">
+              <label class="sr-only" for="new-task">Add something to today</label>
+              <input id="new-task" type="text" maxlength="80" placeholder="Add something small…" autocomplete="off" />
+              <button type="submit" aria-label="Add task">+</button>
+            </form>
+          </article>
+
+          <article class="panel checkin-panel">
+            <div class="checkin-copy">
+              <span class="section-kicker">A tiny check-in</span>
+              <h2>How are you arriving today?</h2>
+              <p>No need to fix it. Pixo just wants to know.</p>
+            </div>
+            <div class="mood-picker" id="mood-picker" role="group" aria-label="Choose your mood">
+              <button type="button" data-mood="low"><span>😔</span>Low</button>
+              <button type="button" data-mood="okay"><span>😌</span>Okay</button>
+              <button type="button" data-mood="good"><span>🙂</span>Good</button>
+              <button type="button" data-mood="great"><span>😄</span>Great</button>
+            </div>
+            <form class="note-form" id="note-form">
+              <label class="sr-only" for="checkin-note">Add a note about today</label>
+              <textarea id="checkin-note" rows="2" maxlength="180" placeholder="Anything you want Pixo to remember?"></textarea>
+              <button type="submit">Save check-in</button>
+            </form>
+          </article>
+
+          <article class="panel growth-panel" id="memories">
+            <div class="panel__header">
+              <div>
+                <span class="section-kicker">Growing together</span>
+                <h2>Your week with Pixo</h2>
+              </div>
+              <span class="growth-badge">Little wins count</span>
+            </div>
+
+            <div class="week-chart" id="week-chart" aria-label="Focus minutes this week">
+              <div class="chart-day" data-day="Mon"><span style="--height: 38%"></span><small>M</small></div>
+              <div class="chart-day" data-day="Tue"><span style="--height: 62%"></span><small>T</small></div>
+              <div class="chart-day" data-day="Wed"><span style="--height: 48%"></span><small>W</small></div>
+              <div class="chart-day" data-day="Thu"><span style="--height: 12%"></span><small>T</small></div>
+              <div class="chart-day" data-day="Fri"><span style="--height: 8%"></span><small>F</small></div>
+              <div class="chart-day" data-day="Sat"><span style="--height: 8%"></span><small>S</small></div>
+              <div class="chart-day" data-day="Sun"><span style="--height: 8%"></span><small>S</small></div>
+            </div>
+
+            <div class="memory-strip">
+              <span class="memory-strip__icon">♡</span>
+              <div>
+                <small>What Pixo remembers</small>
+                <p id="latest-memory">You’re building a calmer rhythm, one day at a time.</p>
+              </div>
+            </div>
+
+            <div class="memory-log-wrap">
+              <button class="text-button" id="memory-toggle" type="button" aria-expanded="false">View your memories</button>
+              <div class="memory-log" id="memory-log" hidden>
+                <article class="memory" id="memory-first">
+                  <time datetime="2026-09-04">Today</time>
+                  <p>Pixo moved in. A small beginning.</p>
+                </article>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <footer class="footer">
+          <p>Made for soft focus and real life.</p>
+          <button class="text-button" id="page-love-info" type="button">Hosted on PageLove</button>
+        </footer>
+      </main>
+    </div>
+
+    <dialog class="profile-dialog" id="profile-dialog">
+      <form method="dialog" id="profile-form">
+        <div class="dialog__header">
+          <div>
+            <span class="section-kicker">Make Pixo yours</span>
+            <h2>Your little corner</h2>
+          </div>
+          <button class="dialog__close" id="dialog-close" type="button" aria-label="Close settings">×</button>
+        </div>
+        <label for="profile-name">What should Pixo call you?</label>
+        <input id="profile-name" name="profile-name" maxlength="32" value="friend" />
+        <label for="focus-length">Focus session length</label>
+        <select id="focus-length" name="focus-length">
+          <option value="15">15 minutes</option>
+          <option value="25" selected>25 minutes</option>
+          <option value="45">45 minutes</option>
+          <option value="60">60 minutes</option>
+        </select>
+        <button class="primary-button primary-button--wide" value="save">Save changes</button>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <div id="app-persistent-state" hidden>
+      <div id="profile-state">
+        <span data-field="name">friend</span>
+        <span data-field="focus-length">25</span>
+      </div>
+      <div id="focus-state">
+        <span data-field="sessions">0</span>
+        <span data-field="minutes">0</span>
+        <span data-field="streak">1</span>
+        <span data-field="daily-date"></span>
+        <span data-field="last-focus-date"></span>
+      </div>
+      <div id="growth-state">
+        <span data-field="xp">35</span>
+        <span data-field="level">1</span>
+      </div>
+      <div id="checkin-state">
+        <span data-field="mood"></span>
+        <span data-field="note"></span>
+        <span data-field="date"></span>
+      </div>
+    </div>
+
+    <!-- PageLove authorization: authenticated users can persist app state at element granularity. -->
+    <div hidden itemscope itemtype="https://pagelove.org/AuthorizationRule">
+      <meta itemprop="actor" content="users" />
+      <meta itemprop="resource" content="/index.html" />
+      <meta itemprop="method" content="PUT" />
+      <meta itemprop="selector" content="#profile-state, #focus-state, #growth-state, #checkin-state, #task-list .task" />
+      <meta itemprop="action" content="Allow" />
+    </div>
+    <div hidden itemscope itemtype="https://pagelove.org/AuthorizationRule">
+      <meta itemprop="actor" content="users" />
+      <meta itemprop="resource" content="/index.html" />
+      <meta itemprop="method" content="POST" />
+      <meta itemprop="selector" content="#task-list, #memory-log" />
+      <meta itemprop="action" content="Allow" />
+    </div>
+    <div hidden itemscope itemtype="https://pagelove.org/AuthorizationRule">
+      <meta itemprop="actor" content="users" />
+      <meta itemprop="resource" content="/index.html" />
+      <meta itemprop="method" content="DELETE" />
+      <meta itemprop="selector" content="#task-list .task" />
+      <meta itemprop="action" content="Allow" />
+    </div>
+  </body>
+</html>
