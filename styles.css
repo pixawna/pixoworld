@@ -437,6 +437,19 @@ button {
   min-height: 240px;
 }
 
+.pixo-scene::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  right: 8%;
+  bottom: 6px;
+  width: 285px;
+  height: 285px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 246, 205, 0.72), rgba(193, 164, 255, 0.18) 46%, transparent 70%);
+  animation: pixo-aura 5.2s ease-in-out infinite;
+}
+
 .pixo {
   position: absolute;
   z-index: 2;
@@ -444,7 +457,35 @@ button {
   bottom: 28px;
   width: 148px;
   height: 194px;
-  animation: pixo-breathe 4s ease-in-out infinite;
+}
+
+.pixo--art {
+  right: 15%;
+  bottom: 10px;
+  width: 242px;
+  height: 262px;
+  object-fit: contain;
+  cursor: pointer;
+  outline: none;
+  transform-origin: 50% 88%;
+  will-change: transform, filter;
+  filter: drop-shadow(0 22px 18px rgba(78, 48, 23, 0.2));
+  animation:
+    pixo-arrive 760ms cubic-bezier(.16, 1.15, .3, 1) both,
+    pixo-float 4.6s 760ms ease-in-out infinite;
+}
+
+.pixo--art:hover,
+.pixo--art:focus-visible,
+.pixo--art.is-celebrating {
+  filter: drop-shadow(0 24px 21px rgba(78, 48, 23, 0.24)) drop-shadow(0 0 14px rgba(122, 91, 224, 0.24));
+  animation: pixo-celebrate 760ms cubic-bezier(.2, .75, .25, 1) both;
+}
+
+.pixo--art:focus-visible {
+  border-radius: 46%;
+  outline: 4px solid rgba(92, 69, 167, 0.32);
+  outline-offset: 5px;
 }
 
 .pixo__head {
@@ -636,6 +677,7 @@ button {
   border-radius: 50%;
   background: rgba(96, 58, 8, 0.17);
   filter: blur(8px);
+  animation: pixo-shadow 4.6s 760ms ease-in-out infinite;
 }
 
 .speech-bubble {
@@ -651,6 +693,7 @@ button {
   font-size: 11px;
   font-weight: 700;
   box-shadow: 0 10px 24px rgba(92, 60, 10, 0.1);
+  animation: bubble-float 3.8s ease-in-out infinite;
 }
 
 .plant {
@@ -1116,6 +1159,176 @@ button {
   padding: 28px;
 }
 
+.reminder-panel {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr auto;
+  grid-column: 1 / -1;
+  gap: 28px;
+  align-items: center;
+  padding: 28px;
+  background: linear-gradient(120deg, rgba(255, 239, 196, 0.62), rgba(255, 255, 255, 0.76));
+}
+
+.reminder-panel__intro p {
+  max-width: 440px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.reminder-list {
+  display: grid;
+  gap: 8px;
+}
+
+.reminder-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border: 1px solid rgba(68, 56, 35, 0.07);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.reminder-row__icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 11px;
+  background: #fff;
+  font-size: 18px;
+}
+
+.reminder-row strong,
+.reminder-row small {
+  display: block;
+}
+
+.reminder-row strong {
+  font-size: 12px;
+}
+
+.reminder-row small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.reminder-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.secondary-button {
+  min-width: 130px;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.75);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.secondary-button--warm {
+  border-color: rgba(103, 79, 174, 0.16);
+  color: #5b477e;
+  background: rgba(211, 199, 255, 0.45);
+}
+
+.field-help {
+  margin-top: -5px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.screen-reminder {
+  position: fixed;
+  right: 30px;
+  bottom: 24px;
+  z-index: 100;
+  display: grid;
+  width: min(510px, calc(100vw - 30px));
+  grid-template-columns: 190px 1fr;
+  align-items: end;
+  pointer-events: none;
+  filter: drop-shadow(0 28px 40px rgba(44, 32, 23, 0.24));
+  animation: reminder-in 420ms cubic-bezier(.2, .8, .2, 1);
+}
+
+.screen-reminder[hidden] {
+  display: none;
+}
+
+.screen-reminder > img {
+  position: relative;
+  z-index: 2;
+  width: 205px;
+  max-height: 235px;
+  object-fit: contain;
+  object-position: bottom;
+  pointer-events: auto;
+  transform-origin: 50% 90%;
+  animation: reminder-pixo 3.6s ease-in-out infinite;
+}
+
+.screen-reminder__bubble {
+  position: relative;
+  align-self: center;
+  margin-left: -14px;
+  padding: 22px 20px 20px 27px;
+  border: 1px solid rgba(50, 38, 24, 0.1);
+  border-radius: 22px 22px 22px 5px;
+  background: rgba(255, 253, 247, 0.96);
+  pointer-events: auto;
+  backdrop-filter: blur(18px);
+}
+
+.screen-reminder__bubble h2 {
+  margin: 0;
+  font-family: "Manrope", sans-serif;
+  font-size: 20px;
+}
+
+.screen-reminder__bubble p {
+  margin: 7px 0 15px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.screen-reminder__bubble > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.screen-reminder__bubble .primary-button {
+  padding: 10px 13px;
+}
+
+.screen-reminder__close {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 9px;
+  color: var(--muted);
+  background: #f2eee5;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+@keyframes reminder-in {
+  from { opacity: 0; transform: translateY(35px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .growth-badge {
   color: #526d5c;
   background: rgba(168, 215, 189, 0.3);
@@ -1335,9 +1548,45 @@ button {
   outline-offset: 3px;
 }
 
-@keyframes pixo-breathe {
+@keyframes pixo-arrive {
+  0% { opacity: 0; transform: translateY(32px) scale(.78) rotate(-7deg); }
+  70% { opacity: 1; transform: translateY(-7px) scale(1.035) rotate(2deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(-1deg); }
+}
+
+@keyframes pixo-float {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-1.4deg) scale(1); }
+  28% { transform: translate3d(0, -7px, 0) rotate(.6deg) scale(1.01); }
+  52% { transform: translate3d(0, -11px, 0) rotate(1.2deg) scale(1.018); }
+  76% { transform: translate3d(0, -5px, 0) rotate(-.5deg) scale(1.008); }
+}
+
+@keyframes pixo-celebrate {
+  0% { transform: translateY(0) rotate(-1deg) scale(1); }
+  22% { transform: translateY(-18px) rotate(-6deg) scale(1.035); }
+  45% { transform: translateY(-7px) rotate(6deg) scale(1.04); }
+  68% { transform: translateY(-13px) rotate(-3deg) scale(1.025); }
+  100% { transform: translateY(0) rotate(0) scale(1); }
+}
+
+@keyframes pixo-aura {
+  0%, 100% { opacity: .62; transform: scale(.94); }
+  50% { opacity: .95; transform: scale(1.06); }
+}
+
+@keyframes pixo-shadow {
+  0%, 100% { opacity: .9; transform: scaleX(1); }
+  50% { opacity: .56; transform: scaleX(.84); }
+}
+
+@keyframes bubble-float {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-5px) rotate(.6deg); }
+}
+
+@keyframes reminder-pixo {
   0%, 100% { transform: translateY(0) rotate(-1deg); }
-  50% { transform: translateY(-5px) rotate(1deg); }
+  50% { transform: translateY(-8px) rotate(1deg); }
 }
 
 @keyframes blink {
@@ -1377,7 +1626,7 @@ button {
   .sidebar__footer { flex-direction: column; gap: 16px; }
   .main { width: calc(100% - 82px); margin-left: 82px; padding-inline: 28px; }
   .companion-card { grid-template-columns: 1.05fr .95fr; padding: 42px; }
-  .pixo { right: 18%; }
+  .pixo--art { right: 18%; }
   .speech-bubble { right: -10px; }
 }
 
@@ -1388,6 +1637,8 @@ button {
   .pixo-scene { position: absolute; right: 0; bottom: 0; width: 52%; height: 57%; }
   .dashboard-grid { grid-template-columns: 1fr; }
   .focus-panel, .tasks-panel, .checkin-panel, .growth-panel { grid-column: 1; }
+  .reminder-panel { grid-template-columns: 1fr 1fr; grid-column: 1; }
+  .reminder-panel__intro { grid-column: 1 / -1; }
   .checkin-panel { grid-template-columns: 1fr; }
   .mood-picker, .note-form { grid-column: 1; }
 }
@@ -1417,11 +1668,15 @@ button {
   .companion-card { min-height: 550px; padding: 30px 25px; border-radius: 24px; }
   .companion-card h2 { font-size: 38px; letter-spacing: -1.7px; }
   .pixo-scene { width: 88%; height: 48%; }
-  .pixo { right: 28%; transform: scale(.9); transform-origin: bottom; }
+  .pixo--art { right: 20%; width: 218px; height: 236px; }
   .speech-bubble { right: 4%; }
   .plant { right: 0; }
   .level-chip { right: 15px; bottom: 15px; }
-  .focus-panel, .tasks-panel, .checkin-panel, .growth-panel { padding: 23px 20px; }
+  .focus-panel, .tasks-panel, .checkin-panel, .reminder-panel, .growth-panel { padding: 23px 20px; }
+  .reminder-panel { grid-template-columns: 1fr; }
+  .reminder-panel__intro { grid-column: 1; }
+  .reminder-actions { grid-template-columns: 1fr 1fr; }
+  .secondary-button { min-width: 0; }
   .timer-wrap { flex-direction: column; }
   .timer-button { grid-template-columns: auto auto; gap: 7px; min-width: 160px; min-height: 48px; padding: 9px 16px; }
   .timer-button svg { width: 21px; margin: 0; }
@@ -1432,6 +1687,11 @@ button {
   .week-chart { gap: 5px; padding-inline: 5px; }
   .chart-day span { width: 22px; }
   .footer { display: grid; gap: 10px; justify-content: center; text-align: center; }
+  .screen-reminder { right: 8px; bottom: 76px; width: calc(100vw - 16px); grid-template-columns: 115px 1fr; }
+  .screen-reminder > img { width: 130px; max-height: 170px; }
+  .screen-reminder__bubble { margin-left: -7px; padding: 18px 14px 16px 20px; }
+  .screen-reminder__bubble h2 { font-size: 16px; }
+  .screen-reminder__bubble > div { align-items: flex-start; flex-direction: column; }
 }
 
 @media (prefers-reduced-motion: reduce) {

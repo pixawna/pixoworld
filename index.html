@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" xmlns:p="https://pagelove.org/1.0">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,21 +15,11 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css" />
-    <script type="module">
-      try {
-        const capabilities = await fetch(window.location.href, {
-          method: "OPTIONS",
-          headers: { Accept: "multipart/mixed" },
-        });
-        if (capabilities.headers.get("content-type")?.includes("multipart/mixed")) {
-          await import("https://pagelove.github.io/beta-js/pagelove.mjs");
-        }
-      } catch (_) {
-        // Browser-private persistence remains available when host capabilities are unavailable.
-      }
-    </script>
-    <script src="./app.js?v=2" defer></script>
+    <link rel="stylesheet" href="./styles.css?v=3" />
+    <!-- PageLove's documented client pair: live mutations first, then app bindings. -->
+    <script type="module" src="https://pagelove.github.io/beta-js/pagelove/sse.mjs"></script>
+    <script type="module" src="https://pagelove.github.io/beta-js/pagelove.mjs"></script>
+    <script src="./app.js?v=6" defer></script>
   </head>
   <body>
     <div class="ambient ambient--one"></div>
@@ -110,24 +100,15 @@
               <span class="plant__leaf plant__leaf--three"></span>
               <span class="plant__pot"></span>
             </div>
-            <div class="pixo" id="pixo-character" data-mood="happy" aria-hidden="true">
-              <div class="pixo__antenna"><span></span></div>
-              <div class="pixo__ear pixo__ear--left"></div>
-              <div class="pixo__ear pixo__ear--right"></div>
-              <div class="pixo__head">
-                <span class="pixo__shine"></span>
-                <div class="pixo__face">
-                  <span class="pixo__eye pixo__eye--left"></span>
-                  <span class="pixo__eye pixo__eye--right"></span>
-                  <span class="pixo__mouth"></span>
-                </div>
-              </div>
-              <div class="pixo__body"><span class="pixo__heart">♥</span></div>
-              <div class="pixo__arm pixo__arm--left"></div>
-              <div class="pixo__arm pixo__arm--right"></div>
-              <div class="pixo__foot pixo__foot--left"></div>
-              <div class="pixo__foot pixo__foot--right"></div>
-            </div>
+            <img
+              class="pixo pixo--art"
+              id="pixo-character"
+              src="./assets/pixo_2d.png?v=2"
+              alt="Pixo, a cheerful purple companion carrying a notebook of ideas"
+              role="button"
+              tabindex="0"
+              aria-label="Say hello to Pixo"
+            />
             <div class="scene-shadow"></div>
           </div>
 
@@ -180,7 +161,7 @@
               <span class="task-count" id="task-count">0 / 3</span>
             </div>
 
-            <ul class="task-list" id="task-list">
+            <ul class="task-list" id="task-list" p:transient>
               <li class="task" id="task-welcome" data-task-id="welcome">
                 <label>
                   <input type="checkbox" />
@@ -233,6 +214,28 @@
             </form>
           </article>
 
+          <article class="panel reminder-panel" id="care-reminders">
+            <div class="reminder-panel__intro">
+              <span class="section-kicker">Pixo cares</span>
+              <h2>Small reminders, right on time.</h2>
+              <p>Pixo can appear on this screen—and from the macOS desktop app—even when work gets busy.</p>
+            </div>
+            <div class="reminder-list">
+              <div class="reminder-row">
+                <span class="reminder-row__icon">💧</span>
+                <div><strong>Drink water</strong><small id="water-summary">10:30 AM · 1:00 PM · 3:30 PM</small></div>
+              </div>
+              <div class="reminder-row">
+                <span class="reminder-row__icon">🍲</span>
+                <div><strong>Time to eat</strong><small id="meal-summary">5:00 PM</small></div>
+              </div>
+            </div>
+            <div class="reminder-actions">
+              <button class="secondary-button" id="edit-reminders" type="button">Edit times</button>
+              <button class="secondary-button secondary-button--warm" id="test-reminder" type="button">Meet desktop Pixo</button>
+            </div>
+          </article>
+
           <article class="panel growth-panel" id="memories">
             <div class="panel__header">
               <div>
@@ -262,7 +265,7 @@
 
             <div class="memory-log-wrap">
               <button class="text-button" id="memory-toggle" type="button" aria-expanded="false">View your memories</button>
-              <div class="memory-log" id="memory-log" hidden>
+              <div class="memory-log" id="memory-log" hidden p:transient>
                 <article class="memory" id="memory-first">
                   <time datetime="2026-09-04">Today</time>
                   <p>Pixo moved in. A small beginning.</p>
@@ -297,16 +300,23 @@
           <option value="45">45 minutes</option>
           <option value="60">60 minutes</option>
         </select>
+        <label for="water-times">Water reminder times</label>
+        <input id="water-times" name="water-times" value="10:30, 13:00, 15:30" placeholder="10:30, 13:00, 15:30" />
+        <small class="field-help">Use 24-hour times separated by commas.</small>
+        <label for="meal-time">Meal reminder time</label>
+        <input id="meal-time" name="meal-time" type="time" value="17:00" />
         <button class="primary-button primary-button--wide" value="save">Save changes</button>
       </form>
     </dialog>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-    <div id="app-persistent-state" hidden>
+    <div id="app-persistent-state" hidden p:transient>
       <div id="profile-state">
         <span data-field="name">friend</span>
         <span data-field="focus-length">25</span>
+        <span data-field="water-times">10:30,13:00,15:30</span>
+        <span data-field="meal-time">17:00</span>
       </div>
       <div id="focus-state">
         <span data-field="sessions">0</span>
@@ -326,27 +336,50 @@
       </div>
     </div>
 
-    <!-- PageLove authorization: authenticated users can persist app state at element granularity. -->
+    <!--
+      PageLove authorization. All writable targets are p:transient, so each browser
+      session gets private server-backed state without changing the canonical page.
+    -->
     <div hidden itemscope itemtype="https://pagelove.org/AuthorizationRule">
-      <meta itemprop="actor" content="users" />
-      <meta itemprop="resource" content="/index.html" />
-      <meta itemprop="method" content="PUT" />
-      <meta itemprop="selector" content="#profile-state, #focus-state, #growth-state, #checkin-state, #task-list .task" />
+      <meta itemprop="actor" content="*" />
+      <meta itemprop="resource" content="/*" />
+      <meta itemprop="method" content="GET" />
       <meta itemprop="action" content="Allow" />
     </div>
     <div hidden itemscope itemtype="https://pagelove.org/AuthorizationRule">
-      <meta itemprop="actor" content="users" />
-      <meta itemprop="resource" content="/index.html" />
+      <meta itemprop="actor" content="*" />
+      <meta itemprop="resource" content="/*" />
+      <meta itemprop="method" content="PUT" />
+      <meta itemprop="selector" content="#app-persistent-state, #app-persistent-state *, #task-list, #task-list .task, #memory-log, #memory-log *" />
+      <meta itemprop="action" content="Allow" />
+    </div>
+    <div hidden itemscope itemtype="https://pagelove.org/AuthorizationRule">
+      <meta itemprop="actor" content="*" />
+      <meta itemprop="resource" content="/*" />
       <meta itemprop="method" content="POST" />
       <meta itemprop="selector" content="#task-list, #memory-log" />
       <meta itemprop="action" content="Allow" />
     </div>
     <div hidden itemscope itemtype="https://pagelove.org/AuthorizationRule">
-      <meta itemprop="actor" content="users" />
-      <meta itemprop="resource" content="/index.html" />
+      <meta itemprop="actor" content="*" />
+      <meta itemprop="resource" content="/*" />
       <meta itemprop="method" content="DELETE" />
-      <meta itemprop="selector" content="#task-list .task" />
+      <meta itemprop="selector" content="#task-list .task, #memory-log > *" />
       <meta itemprop="action" content="Allow" />
     </div>
+
+    <aside class="screen-reminder" id="screen-reminder" hidden role="dialog" aria-modal="false" aria-labelledby="reminder-title">
+      <img src="./assets/pixo_2d.png?v=2" alt="Pixo" />
+      <div class="screen-reminder__bubble">
+        <button class="screen-reminder__close" id="reminder-close" type="button" aria-label="Close reminder">×</button>
+        <span class="section-kicker">A note from Pixo</span>
+        <h2 id="reminder-title">Tiny water break?</h2>
+        <p id="reminder-message">A few sips now. Your ideas can wait thirty seconds.</p>
+        <div>
+          <button class="primary-button" id="reminder-done" type="button">Done, Pixo</button>
+          <button class="text-button" id="reminder-snooze" type="button">10 more minutes</button>
+        </div>
+      </div>
+    </aside>
   </body>
 </html>

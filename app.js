@@ -7,6 +7,7 @@
   const focusState = $("#focus-state");
   const growthState = $("#growth-state");
   const checkinState = $("#checkin-state");
+  const appPersistentState = $("#app-persistent-state");
   const taskList = $("#task-list");
   const memoryLog = $("#memory-log");
   const timerDisplay = $("#timer-display");
@@ -24,6 +25,9 @@
   };
   let selectedMood = "";
   let toastTimeout;
+  let pixoAnimationTimeout;
+  let legacySnapshot = null;
+  let migratingLegacy = false;
   let audioContext;
   let ambientNodes = [];
 
@@ -49,6 +53,16 @@
     toastTimeout = window.setTimeout(() => toast.classList.remove("is-visible"), 2800);
   };
 
+  const animatePixo = (message = "I’m right here. ♡") => {
+    const pixo = $("#pixo-character");
+    $("#speech-bubble").textContent = message;
+    pixo.classList.remove("is-celebrating");
+    void pixo.offsetWidth;
+    pixo.classList.add("is-celebrating");
+    window.clearTimeout(pixoAnimationTimeout);
+    pixoAnimationTimeout = window.setTimeout(() => pixo.classList.remove("is-celebrating"), 820);
+  };
+
   const setSyncStatus = (label, state = "") => {
     syncStatus.classList.remove("is-live", "is-saving");
     if (state) syncStatus.classList.add(state);
@@ -56,12 +70,14 @@
   };
 
   const isPageLoveHost = () =>
-    location.protocol === "https:" && !["localhost", "127.0.0.1"].includes(location.hostname);
+    location.protocol === "https:" && location.hostname.endsWith(".onpagelove.com");
 
   const snapshot = () => ({
     profile: {
       name: readState(profileState, "name", "friend"),
       focusLength: readState(profileState, "focus-length", "25"),
+      waterTimes: readState(profileState, "water-times", "10:30,13:00,15:30"),
+      mealTime: readState(profileState, "meal-time", "17:00"),
     },
     focus: {
       sessions: readState(focusState, "sessions", "0"),
@@ -84,6 +100,7 @@
   });
 
   const saveLocal = () => {
+    if (isPageLoveHost()) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot()));
     } catch (error) {
@@ -95,8 +112,11 @@
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
       if (!saved) return;
+      if (isPageLoveHost()) legacySnapshot = saved;
       writeState(profileState, "name", saved.profile?.name || "friend");
       writeState(profileState, "focus-length", saved.profile?.focusLength || "25");
+      writeState(profileState, "water-times", saved.profile?.waterTimes || "10:30,13:00,15:30");
+      writeState(profileState, "meal-time", saved.profile?.mealTime || "17:00");
       writeState(focusState, "sessions", saved.focus?.sessions || "0");
       writeState(focusState, "minutes", saved.focus?.minutes || "0");
       writeState(focusState, "streak", saved.focus?.streak || "1");
@@ -114,10 +134,72 @@
     }
   };
 
+  const waitForPageLoveMethod = (element, method, timeout = 6500) => {
+    if (typeof element?.[method] === "function") return Promise.resolve(true);
+    if (!isPageLoveHost()) return Promise.resolve(false);
+
+    return new Promise((resolve) => {
+      const started = Date.now();
+      let timerId;
+      const finish = (ready) => {
+        window.clearInterval(timerId);
+        document.removeEventListener("PLCapability", check);
+        resolve(ready);
+      };
+      const check = () => {
+        if (typeof element?.[method] === "function") finish(true);
+        else if (Date.now() - started >= timeout) finish(false);
+      };
+      document.addEventListener("PLCapability", check);
+      timerId = window.setInterval(check, 100);
+      check();
+    });
+  };
+
+  const migrateLegacyBrowserState = async () => {
+    if (!legacySnapshot || !isPageLoveHost() || migratingLegacy) return;
+    migratingLegacy = true;
+    const targets = [appPersistentState, taskList, memoryLog];
+    if (!(await waitForPageLoveMethod(appPersistentState, "PUT"))) {
+      migratingLegacy = false;
+      return;
+    }
+
+    try {
+      setSyncStatus("Moving memories to PageLove…", "is-saving");
+      for (const target of targets) {
+        const response = await fetch(`${location.origin}${location.pathname}`, {
+          method: "PUT",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "text/html",
+            Range: `selector=#${target.id}`,
+          },
+          body: target.outerHTML,
+        });
+        if (!response?.ok) throw new Error(`PageLove returned ${response?.status || "an error"}`);
+      }
+      localStorage.removeItem(STORAGE_KEY);
+      legacySnapshot = null;
+      setSyncStatus("PageLove synced", "is-live");
+    } catch (error) {
+      console.warn("Pixo could not migrate legacy browser data to PageLove.", error);
+      setSyncStatus("PageLove sync needs attention");
+    } finally {
+      migratingLegacy = false;
+    }
+  };
+
   const persist = async (element, successMessage = "Saved with Pixo") => {
-    saveLocal();
-    if (typeof element?.PUT !== "function") {
-      setSyncStatus(isPageLoveHost() ? "Private browser memory" : "Saved locally");
+    const canWrite = await waitForPageLoveMethod(element, "PUT");
+    if (!canWrite) {
+      if (!isPageLoveHost()) {
+        saveLocal();
+        setSyncStatus("Saved locally");
+      } else {
+        setSyncStatus("PageLove connection unavailable");
+        showToast("Pixo could not reach PageLove. Please try again.");
+      }
       return false;
     }
 
@@ -129,19 +211,19 @@
       if (successMessage) showToast(successMessage);
       return true;
     } catch (error) {
-      console.warn("PageLove sync fell back to this browser.", error);
-      setSyncStatus("Saved locally");
-      showToast("Saved here. Sign in to enable PageLove sync.");
+      console.warn("PageLove sync failed.", error);
+      setSyncStatus("PageLove sync needs attention");
+      showToast("Pixo could not sync that change. Please try again.");
       return false;
     }
   };
 
   const appendWithPageLove = async (parent, html, localNode) => {
-    saveLocal();
-    if (typeof parent?.POST !== "function") {
+    const canWrite = await waitForPageLoveMethod(parent, "POST");
+    if (!canWrite) {
       parent.append(localNode);
-      saveLocal();
-      setSyncStatus(isPageLoveHost() ? "Private browser memory" : "Saved locally");
+      if (!isPageLoveHost()) saveLocal();
+      setSyncStatus(isPageLoveHost() ? "PageLove connection unavailable" : "Saved locally");
       return;
     }
 
@@ -151,17 +233,19 @@
       setSyncStatus("PageLove synced", "is-live");
       return responseNode;
     } catch (error) {
-      console.warn("PageLove POST fell back to this browser.", error);
+      console.warn("PageLove POST failed.", error);
       parent.append(localNode);
-      saveLocal();
-      setSyncStatus("Saved locally");
+      if (!isPageLoveHost()) saveLocal();
+      setSyncStatus(isPageLoveHost() ? "PageLove sync needs attention" : "Saved locally");
     }
   };
 
   const removeWithPageLove = async (element) => {
-    if (typeof element?.DELETE !== "function") {
+    const canWrite = await waitForPageLoveMethod(element, "DELETE");
+    if (!canWrite) {
       element.remove();
-      saveLocal();
+      if (!isPageLoveHost()) saveLocal();
+      else setSyncStatus("PageLove connection unavailable");
       return;
     }
 
@@ -170,10 +254,9 @@
       await element.DELETE();
       setSyncStatus("PageLove synced", "is-live");
     } catch (error) {
-      console.warn("PageLove DELETE fell back to this browser.", error);
-      element.remove();
-      saveLocal();
-      setSyncStatus("Saved locally");
+      console.warn("PageLove DELETE failed.", error);
+      setSyncStatus("PageLove sync needs attention");
+      showToast("Pixo could not remove that yet. Please try again.");
     }
   };
 
@@ -194,12 +277,73 @@
     $("#greeting-name").textContent = name;
     $("#profile-name").value = name;
     $("#focus-length").value = String(focusLength);
+    $("#water-times").value = readState(profileState, "water-times", "10:30,13:00,15:30").replaceAll(",", ", ");
+    $("#meal-time").value = readState(profileState, "meal-time", "17:00");
+    updateReminderSummary();
     $("#profile-button").textContent = name === "friend" ? "P" : name.charAt(0).toUpperCase();
     if (!timer.running) {
       timer.duration = focusLength * 60;
       timer.remaining = focusLength * 60;
       renderTimer();
     }
+  };
+
+  const prettyTime = (value) => {
+    const [hours, minutes] = value.trim().split(":").map(Number);
+    if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return value;
+    const suffix = hours >= 12 ? "PM" : "AM";
+    const hour = hours % 12 || 12;
+    return `${hour}:${String(minutes).padStart(2, "0")} ${suffix}`;
+  };
+
+  const reminderTimes = () => ({
+    water: readState(profileState, "water-times", "10:30,13:00,15:30").split(",").map((time) => time.trim()).filter(Boolean),
+    meal: [readState(profileState, "meal-time", "17:00")],
+  });
+
+  const updateReminderSummary = () => {
+    const times = reminderTimes();
+    $("#water-summary").textContent = times.water.map(prettyTime).join(" · ");
+    $("#meal-summary").textContent = prettyTime(times.meal[0]);
+  };
+
+  const showScreenReminder = (kind = "water") => {
+    const reminder = $("#screen-reminder");
+    const isMeal = kind === "meal";
+    const mealTime = prettyTime(reminderTimes().meal[0]);
+    $("#reminder-title").textContent = isMeal ? "It’s time to eat." : "Tiny water break?";
+    $("#reminder-message").textContent = isMeal
+      ? `${mealTime} check-in: let’s pause for food before the next big idea.`
+      : "A few sips now. Your ideas can wait thirty seconds.";
+    reminder.dataset.kind = kind;
+    reminder.hidden = false;
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification(isMeal ? "Pixo says: time to eat 🍲" : "Pixo says: water break 💧", {
+        body: isMeal ? `${mealTime} check-in: let’s pause for food.` : "A few sips now—you’ve got this.",
+        icon: "./assets/pixo_2d.png",
+      });
+    }
+  };
+
+  const hideScreenReminder = () => {
+    $("#screen-reminder").hidden = true;
+  };
+
+  const startReminderClock = () => {
+    const check = () => {
+      const now = new Date();
+      const current = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+      const day = now.toISOString().slice(0, 10);
+      const times = reminderTimes();
+      const kind = times.meal.includes(current) ? "meal" : times.water.includes(current) ? "water" : "";
+      if (!kind) return;
+      const key = `${day}-${current}-${kind}`;
+      if (sessionStorage.getItem("pixo-last-reminder") === key) return;
+      sessionStorage.setItem("pixo-last-reminder", key);
+      showScreenReminder(kind);
+    };
+    check();
+    window.setInterval(check, 20000);
   };
 
   const updateStatsUI = () => {
@@ -264,7 +408,7 @@
       xp -= 100;
       level += 1;
       showToast(`Pixo grew to level ${level}!`);
-      $("#speech-bubble").textContent = "We’re growing! ✦";
+      animatePixo("We’re growing! ✦");
     }
     writeState(growthState, "xp", xp);
     writeState(growthState, "level", level);
@@ -339,6 +483,7 @@
     timer.remaining = timer.duration;
     renderTimer();
     $("#speech-bubble").textContent = "You did it. Breathe. ♡";
+    animatePixo("You did it. Breathe. ♡");
     $("#pixo-message").textContent = "That was real progress. Let’s take a tiny pause before the next thing.";
     playChime();
   };
@@ -375,7 +520,7 @@
     await persist(task, "");
     if (checkbox.checked) {
       addXP(15);
-      $("#speech-bubble").textContent = "Little win! ✦";
+      animatePixo("Little win! ✦");
       showToast("Pixo noticed that little win");
     }
   };
@@ -459,6 +604,23 @@
   };
 
   const bindEvents = () => {
+    const greetPixo = () => {
+      const greetings = [
+        "Hi! I saved you a little calm.",
+        "I’m right here. ♡",
+        "Tiny steps still count! ✦",
+        "Let’s build something kind.",
+      ];
+      animatePixo(greetings[Math.floor(Math.random() * greetings.length)]);
+    };
+
+    $("#pixo-character").addEventListener("click", greetPixo);
+    $("#pixo-character").addEventListener("keydown", (event) => {
+      if (!["Enter", " "].includes(event.key)) return;
+      event.preventDefault();
+      greetPixo();
+    });
+
     $("#begin-focus").addEventListener("click", () => {
       $("#focus").scrollIntoView({ behavior: "smooth", block: "center" });
       if (!timer.running) toggleTimer();
@@ -506,17 +668,36 @@
     const openProfile = () => dialog.showModal();
     $("#profile-button").addEventListener("click", openProfile);
     $("#settings-button").addEventListener("click", openProfile);
+    $("#edit-reminders").addEventListener("click", openProfile);
     $("#dialog-close").addEventListener("click", () => dialog.close());
     $("#profile-form").addEventListener("submit", async (event) => {
       event.preventDefault();
       const name = $("#profile-name").value.trim() || "friend";
       const focusLength = $("#focus-length").value;
+      const waterTimes = $("#water-times").value.split(",").map((time) => time.trim()).filter((time) => /^([01]\d|2[0-3]):[0-5]\d$/.test(time));
+      const mealTime = $("#meal-time").value || "17:00";
       writeState(profileState, "name", name);
       writeState(profileState, "focus-length", focusLength);
+      writeState(profileState, "water-times", waterTimes.length ? waterTimes.join(",") : "10:30,13:00,15:30");
+      writeState(profileState, "meal-time", mealTime);
       updateProfileUI();
       resetTimer();
       dialog.close();
       await persist(profileState, "Pixo will remember that");
+    });
+
+    $("#test-reminder").addEventListener("click", () => showScreenReminder("water"));
+    $("#reminder-close").addEventListener("click", hideScreenReminder);
+    $("#reminder-done").addEventListener("click", () => {
+      hideScreenReminder();
+      addXP(5);
+      animatePixo("Nice. I’m proud of you! ✦");
+      showToast("Nice. Pixo is proud of you.");
+    });
+    $("#reminder-snooze").addEventListener("click", () => {
+      hideScreenReminder();
+      window.setTimeout(() => showScreenReminder($("#screen-reminder").dataset.kind || "water"), 10 * 60 * 1000);
+      showToast("Pixo will pop back in 10 minutes.");
     });
 
     $("#sound-toggle").addEventListener("click", async (event) => {
@@ -533,10 +714,13 @@
     });
 
     $("#page-love-info").addEventListener("click", () => {
-      showToast(isPageLoveHost() ? "PageLove hosts Pixo; memories stay in this browser." : "PageLove hosting turns on after deployment.");
+      showToast(isPageLoveHost() ? "Pixo’s private session is synced by PageLove." : "PageLove hosting turns on after deployment.");
     });
 
-    document.addEventListener("PLCapability", () => setSyncStatus("PageLove ready", "is-live"));
+    document.addEventListener("PLCapability", () => {
+      setSyncStatus("PageLove ready", "is-live");
+      migrateLegacyBrowserState();
+    });
     document.addEventListener("PLMethodStarted", () => setSyncStatus("Saving…", "is-saving"));
     document.addEventListener("PLMethodCompleted", (event) => {
       const ok = event.detail?.response?.ok !== false;
@@ -557,14 +741,16 @@
     updateTaskUI();
     updateCheckinUI();
     bindEvents();
+    startReminderClock();
 
     if (isPageLoveHost()) {
       setSyncStatus("Checking PageLove…", "is-saving");
-      window.setTimeout(() => {
-        const hasCapability = [profileState, focusState, growthState, taskList].some(
+      window.setTimeout(async () => {
+        const hasCapability = [appPersistentState, taskList, memoryLog].some(
           (element) => typeof element.PUT === "function" || typeof element.POST === "function",
         );
-        setSyncStatus(hasCapability ? "PageLove ready" : "Private browser memory", hasCapability ? "is-live" : "");
+        setSyncStatus(hasCapability ? "PageLove ready" : "Connecting to PageLove…", hasCapability ? "is-live" : "is-saving");
+        if (hasCapability) await migrateLegacyBrowserState();
       }, 1800);
     } else {
       setSyncStatus("Local preview");
