@@ -1,5 +1,17 @@
 (() => {
   const STORAGE_KEY = "pixo-app-v1";
+  const CONFIG = window.PIXO_TEMPLATE || {};
+  const COMPANION = CONFIG.companion || {};
+  const CARE_DEFAULTS = CONFIG.care || {};
+  const FOCUS_DEFAULTS = CONFIG.focus || {};
+  const companionName = COMPANION.name || "Pixo";
+  const defaultWaterTimes = Array.isArray(CARE_DEFAULTS.waterTimes) && CARE_DEFAULTS.waterTimes.length
+    ? CARE_DEFAULTS.waterTimes
+    : ["10:30", "13:00", "15:30"];
+  const defaultWaterTimesValue = defaultWaterTimes.join(",");
+  const defaultMealTime = CARE_DEFAULTS.mealTime || "17:00";
+  const defaultWaterGoal = Math.min(16, Math.max(4, Number(CARE_DEFAULTS.waterGoal) || 8));
+  const defaultFocusLength = Number(FOCUS_DEFAULTS.defaultMinutes) || 25;
   const $ = (selector, scope = document) => scope.querySelector(selector);
   const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
 
@@ -7,6 +19,7 @@
   const focusState = $("#focus-state");
   const growthState = $("#growth-state");
   const checkinState = $("#checkin-state");
+  let careState = $("#care-state");
   const appPersistentState = $("#app-persistent-state");
   const taskList = $("#task-list");
   const memoryLog = $("#memory-log");
@@ -17,8 +30,8 @@
 
   let timer = {
     mode: "focus",
-    duration: 25 * 60,
-    remaining: 25 * 60,
+    duration: defaultFocusLength * 60,
+    remaining: defaultFocusLength * 60,
     running: false,
     endAt: null,
     interval: null,
@@ -32,11 +45,26 @@
   let ambientNodes = [];
 
   const readState = (container, field, fallback = "") =>
-    container.querySelector(`[data-field="${field}"]`)?.textContent.trim() || fallback;
+    container?.querySelector(`[data-field="${field}"]`)?.textContent.trim() || fallback;
 
   const writeState = (container, field, value) => {
-    const target = container.querySelector(`[data-field="${field}"]`);
+    const target = container?.querySelector(`[data-field="${field}"]`);
     if (target) target.textContent = String(value);
+  };
+
+  const ensureStateSchema = () => {
+    if (!profileState.querySelector('[data-field="water-goal"]')) {
+      const waterGoal = document.createElement("span");
+      waterGoal.dataset.field = "water-goal";
+      waterGoal.textContent = String(defaultWaterGoal);
+      profileState.append(waterGoal);
+    }
+    if (!careState) {
+      careState = document.createElement("div");
+      careState.id = "care-state";
+      careState.innerHTML = '<span data-field="water-count">0</span><span data-field="water-date"></span>';
+      appPersistentState.append(careState);
+    }
   };
 
   const escapeHTML = (value) => {
@@ -53,7 +81,7 @@
     toastTimeout = window.setTimeout(() => toast.classList.remove("is-visible"), 2800);
   };
 
-  const animatePixo = (message = "I’m right here. ♡") => {
+  const animatePixo = (message = `${companionName} is right here. ♡`) => {
     const pixo = $("#pixo-character");
     $("#speech-bubble").textContent = message;
     pixo.classList.remove("is-celebrating");
@@ -75,9 +103,10 @@
   const snapshot = () => ({
     profile: {
       name: readState(profileState, "name", "friend"),
-      focusLength: readState(profileState, "focus-length", "25"),
-      waterTimes: readState(profileState, "water-times", "10:30,13:00,15:30"),
-      mealTime: readState(profileState, "meal-time", "17:00"),
+      focusLength: readState(profileState, "focus-length", String(defaultFocusLength)),
+      waterTimes: readState(profileState, "water-times", defaultWaterTimesValue),
+      waterGoal: readState(profileState, "water-goal", String(defaultWaterGoal)),
+      mealTime: readState(profileState, "meal-time", defaultMealTime),
     },
     focus: {
       sessions: readState(focusState, "sessions", "0"),
@@ -94,6 +123,10 @@
       mood: readState(checkinState, "mood", ""),
       note: readState(checkinState, "note", ""),
       date: readState(checkinState, "date", ""),
+    },
+    care: {
+      waterCount: readState(careState, "water-count", "0"),
+      waterDate: readState(careState, "water-date", ""),
     },
     tasks: taskList.innerHTML,
     memories: memoryLog.innerHTML,
@@ -114,9 +147,10 @@
       if (!saved) return;
       if (isPageLoveHost()) legacySnapshot = saved;
       writeState(profileState, "name", saved.profile?.name || "friend");
-      writeState(profileState, "focus-length", saved.profile?.focusLength || "25");
-      writeState(profileState, "water-times", saved.profile?.waterTimes || "10:30,13:00,15:30");
-      writeState(profileState, "meal-time", saved.profile?.mealTime || "17:00");
+      writeState(profileState, "focus-length", saved.profile?.focusLength || String(defaultFocusLength));
+      writeState(profileState, "water-times", saved.profile?.waterTimes || defaultWaterTimesValue);
+      writeState(profileState, "water-goal", saved.profile?.waterGoal || String(defaultWaterGoal));
+      writeState(profileState, "meal-time", saved.profile?.mealTime || defaultMealTime);
       writeState(focusState, "sessions", saved.focus?.sessions || "0");
       writeState(focusState, "minutes", saved.focus?.minutes || "0");
       writeState(focusState, "streak", saved.focus?.streak || "1");
@@ -127,6 +161,8 @@
       writeState(checkinState, "mood", saved.checkin?.mood || "");
       writeState(checkinState, "note", saved.checkin?.note || "");
       writeState(checkinState, "date", saved.checkin?.date || "");
+      writeState(careState, "water-count", saved.care?.waterCount || "0");
+      writeState(careState, "water-date", saved.care?.waterDate || "");
       if (saved.tasks) taskList.innerHTML = saved.tasks;
       if (saved.memories) memoryLog.innerHTML = saved.memories;
     } catch (error) {
@@ -271,15 +307,130 @@
     $("#day-part").textContent = hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
   };
 
+  const applyTemplateConfig = () => {
+    document.title = COMPANION.browserTitle || `${companionName} — your tiny work companion`;
+    $("#brand-name").textContent = companionName.toLowerCase();
+    $("#presence-label").textContent = `${companionName} is here`;
+    $("#companion-title").replaceChildren();
+    String(COMPANION.heroTitle || "Let’s make today\nfeel a little lighter.")
+      .split("\n")
+      .forEach((line, index) => {
+        if (index) $("#companion-title").append(document.createElement("br"));
+        $("#companion-title").append(document.createTextNode(line));
+      });
+    $("#pixo-message").textContent = COMPANION.heroMessage || "I’ve got the small things. You bring the big ideas.";
+    $("#speech-bubble").textContent = COMPANION.firstWords || "You’ve got this!";
+    $("#pixo-character").alt = `${companionName}, a cheerful digital companion`;
+    $("#pixo-character").setAttribute("aria-label", `Say hello to ${companionName}`);
+    $(".pixo-scene").setAttribute("aria-label", `${companionName}, your digital companion`);
+    $(".reminder-panel__intro .section-kicker").textContent = `${companionName} cares`;
+    $(".checkin-copy p").textContent = `No need to fix it. ${companionName} just wants to know.`;
+    $(".memory-strip small").textContent = `What ${companionName} remembers`;
+    $("#page-love-info").textContent = "Powered by PageLove";
+
+    const appearance = CONFIG.appearance || {};
+    if (appearance.accent) document.documentElement.style.setProperty("--yellow", appearance.accent);
+    if (appearance.accentSoft) document.documentElement.style.setProperty("--yellow-soft", appearance.accentSoft);
+    if (appearance.companionGlow) document.documentElement.style.setProperty("--companion-glow", appearance.companionGlow);
+
+    const focusOptions = Array.isArray(FOCUS_DEFAULTS.options) && FOCUS_DEFAULTS.options.length
+      ? FOCUS_DEFAULTS.options
+      : [15, 25, 45, 60];
+    const currentFocus = Number(readState(profileState, "focus-length", String(defaultFocusLength)));
+    const values = [...new Set([...focusOptions, currentFocus])].filter((value) => Number(value) > 0).sort((a, b) => a - b);
+    $("#focus-length").innerHTML = values
+      .map((value) => `<option value="${Number(value)}">${Number(value)} minutes</option>`)
+      .join("");
+
+    const hasPersonalActivity = Boolean(
+      readState(checkinState, "note", "")
+      || Number(readState(focusState, "sessions", "0"))
+      || readState(careState, "water-date", ""),
+    );
+    const starterTasks = Array.isArray(CONFIG.starterTasks) ? CONFIG.starterTasks.filter(Boolean).slice(0, 8) : [];
+    const isDefaultTaskList = $$(".task", taskList).every((task) => ["task-welcome", "task-water", "task-stretch"].includes(task.id));
+    if (!hasPersonalActivity && isDefaultTaskList && starterTasks.length) {
+      taskList.replaceChildren(...starterTasks.map((label, index) => makeTask(`starter-${index + 1}`, String(label))));
+      writeState(profileState, "focus-length", String(defaultFocusLength));
+      writeState(profileState, "water-times", defaultWaterTimesValue);
+      writeState(profileState, "water-goal", String(defaultWaterGoal));
+      writeState(profileState, "meal-time", defaultMealTime);
+    }
+  };
+
+  const localDateKey = (date = new Date()) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+  const rollCareForward = () => {
+    const today = localDateKey();
+    if (readState(careState, "water-date", "") === today) return;
+    writeState(careState, "water-count", "0");
+    writeState(careState, "water-date", today);
+  };
+
+  const nextCareMoment = () => {
+    const now = new Date();
+    const moments = [
+      ...reminderTimes().water.map((time) => ({ time, label: "Water" })),
+      ...reminderTimes().meal.map((time) => ({ time, label: "Meal" })),
+    ];
+    const candidates = moments.flatMap((moment) => [0, 1].map((dayOffset) => {
+      const [hour, minute] = moment.time.split(":").map(Number);
+      const at = new Date(now);
+      at.setDate(at.getDate() + dayOffset);
+      at.setHours(hour, minute, 0, 0);
+      return { ...moment, at };
+    })).filter((moment) => moment.at >= now).sort((a, b) => a.at - b.at);
+    return candidates[0];
+  };
+
+  const updateCareUI = () => {
+    rollCareForward();
+    const count = Math.max(0, Number(readState(careState, "water-count", "0")) || 0);
+    const goal = Math.min(16, Math.max(4, Number(readState(profileState, "water-goal", String(defaultWaterGoal))) || defaultWaterGoal));
+    const progress = Math.min(100, (count / goal) * 100);
+    $("#water-count-summary").textContent = `${count} / ${goal} ${goal === 1 ? "glass" : "glasses"}`;
+    $("#hydration-progress").setAttribute("aria-valuenow", String(count));
+    $("#hydration-progress").setAttribute("aria-valuemax", String(goal));
+    $("#hydration-progress span").style.width = `${progress}%`;
+    $("#log-water").textContent = count >= goal ? "Goal met — add another" : "+ Log a glass";
+
+    const next = nextCareMoment();
+    if (!next) return;
+    const minutes = Math.max(0, Math.ceil((next.at - new Date()) / 60000));
+    const timing = minutes === 0
+      ? "now"
+      : minutes < 60
+        ? `in ${minutes}m`
+        : minutes < 24 * 60
+          ? `in ${Math.floor(minutes / 60)}h ${minutes % 60}m`
+          : `tomorrow at ${prettyTime(next.time)}`;
+    $("#next-care-summary").textContent = `Next: ${next.label} ${timing}`;
+  };
+
+  const logWater = async () => {
+    rollCareForward();
+    const goal = Math.min(16, Math.max(4, Number(readState(profileState, "water-goal", String(defaultWaterGoal))) || defaultWaterGoal));
+    const count = Math.max(0, Number(readState(careState, "water-count", "0")) || 0) + 1;
+    writeState(careState, "water-count", String(count));
+    writeState(careState, "water-date", localDateKey());
+    updateCareUI();
+    await persist(careState, count === goal ? "Daily water goal complete!" : "Water logged with PageLove");
+    await addXP(5);
+    animatePixo(count === goal ? "Hydration goal complete! ✦" : "Nice sip. Your future self says thanks. 💧");
+  };
+
   const updateProfileUI = () => {
     const name = readState(profileState, "name", "friend");
-    const focusLength = Number(readState(profileState, "focus-length", "25"));
+    const focusLength = Number(readState(profileState, "focus-length", String(defaultFocusLength)));
     $("#greeting-name").textContent = name;
     $("#profile-name").value = name;
     $("#focus-length").value = String(focusLength);
-    $("#water-times").value = readState(profileState, "water-times", "10:30,13:00,15:30").replaceAll(",", ", ");
-    $("#meal-time").value = readState(profileState, "meal-time", "17:00");
+    $("#water-times").value = readState(profileState, "water-times", defaultWaterTimesValue).replaceAll(",", ", ");
+    $("#water-goal").value = readState(profileState, "water-goal", String(defaultWaterGoal));
+    $("#meal-time").value = readState(profileState, "meal-time", defaultMealTime);
     updateReminderSummary();
+    updateCareUI();
     $("#profile-button").textContent = name === "friend" ? "P" : name.charAt(0).toUpperCase();
     if (!timer.running) {
       timer.duration = focusLength * 60;
@@ -297,8 +448,8 @@
   };
 
   const reminderTimes = () => ({
-    water: readState(profileState, "water-times", "10:30,13:00,15:30").split(",").map((time) => time.trim()).filter(Boolean),
-    meal: [readState(profileState, "meal-time", "17:00")],
+    water: readState(profileState, "water-times", defaultWaterTimesValue).split(",").map((time) => time.trim()).filter(Boolean),
+    meal: [readState(profileState, "meal-time", defaultMealTime)],
   });
 
   const updateReminderSummary = () => {
@@ -331,6 +482,7 @@
 
   const startReminderClock = () => {
     const check = () => {
+      updateCareUI();
       const now = new Date();
       const current = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
       const day = now.toISOString().slice(0, 10);
@@ -424,7 +576,9 @@
     timerRing.style.setProperty("--progress", `${Math.max(0, (elapsed / timer.duration) * 360)}deg`);
     timerToggle.classList.toggle("is-running", timer.running);
     $("span", timerToggle).textContent = timer.running ? "Pause" : timer.remaining < timer.duration ? "Continue" : "Start focus";
-    document.title = timer.running ? `${timerDisplay.textContent} · Pixo focus` : "Pixo — your tiny work companion";
+    document.title = timer.running
+      ? `${timerDisplay.textContent} · ${companionName} focus`
+      : (COMPANION.browserTitle || `${companionName} — your tiny work companion`);
   };
 
   const tickTimer = () => {
@@ -455,7 +609,7 @@
     window.clearInterval(timer.interval);
     timer.running = false;
     timer.endAt = null;
-    timer.duration = Number(readState(profileState, "focus-length", "25")) * 60;
+    timer.duration = Number(readState(profileState, "focus-length", String(defaultFocusLength))) * 60;
     timer.remaining = timer.duration;
     renderTimer();
     $("#speech-bubble").textContent = "Fresh start? I’m ready.";
@@ -605,12 +759,9 @@
 
   const bindEvents = () => {
     const greetPixo = () => {
-      const greetings = [
-        "Hi! I saved you a little calm.",
-        "I’m right here. ♡",
-        "Tiny steps still count! ✦",
-        "Let’s build something kind.",
-      ];
+      const greetings = Array.isArray(COMPANION.greetings) && COMPANION.greetings.length
+        ? COMPANION.greetings
+        : ["Hi! I saved you a little calm.", "I’m right here. ♡", "Tiny steps still count! ✦", "Let’s build something kind."];
       animatePixo(greetings[Math.floor(Math.random() * greetings.length)]);
     };
 
@@ -675,10 +826,12 @@
       const name = $("#profile-name").value.trim() || "friend";
       const focusLength = $("#focus-length").value;
       const waterTimes = $("#water-times").value.split(",").map((time) => time.trim()).filter((time) => /^([01]\d|2[0-3]):[0-5]\d$/.test(time));
-      const mealTime = $("#meal-time").value || "17:00";
+      const waterGoal = Math.min(16, Math.max(4, Number($("#water-goal").value) || defaultWaterGoal));
+      const mealTime = $("#meal-time").value || defaultMealTime;
       writeState(profileState, "name", name);
       writeState(profileState, "focus-length", focusLength);
-      writeState(profileState, "water-times", waterTimes.length ? waterTimes.join(",") : "10:30,13:00,15:30");
+      writeState(profileState, "water-times", waterTimes.length ? waterTimes.join(",") : defaultWaterTimesValue);
+      writeState(profileState, "water-goal", String(waterGoal));
       writeState(profileState, "meal-time", mealTime);
       updateProfileUI();
       resetTimer();
@@ -687,12 +840,18 @@
     });
 
     $("#test-reminder").addEventListener("click", () => showScreenReminder("water"));
+    $("#log-water").addEventListener("click", logWater);
     $("#reminder-close").addEventListener("click", hideScreenReminder);
-    $("#reminder-done").addEventListener("click", () => {
+    $("#reminder-done").addEventListener("click", async () => {
+      const kind = $("#screen-reminder").dataset.kind || "water";
       hideScreenReminder();
-      addXP(5);
-      animatePixo("Nice. I’m proud of you! ✦");
-      showToast("Nice. Pixo is proud of you.");
+      if (kind === "water") {
+        await logWater();
+      } else {
+        await addXP(5);
+        animatePixo("Nice. I’m proud of you! ✦");
+        showToast(`Nice. ${companionName} is proud of you.`);
+      }
     });
     $("#reminder-snooze").addEventListener("click", () => {
       hideScreenReminder();
@@ -733,9 +892,12 @@
   };
 
   const init = () => {
+    ensureStateSchema();
     hydrateLocal();
+    applyTemplateConfig();
     setDateAndGreeting();
     rollDailyStatsForward();
+    rollCareForward();
     updateProfileUI();
     updateStatsUI();
     updateTaskUI();

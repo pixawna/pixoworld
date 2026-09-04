@@ -15,11 +15,13 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=3" />
+    <link rel="stylesheet" href="./styles.css?v=6" />
+    <!-- Edit this one file to turn the template into your own companion. -->
+    <script src="./pixo.config.js?v=1"></script>
     <!-- PageLove's documented client pair: live mutations first, then app bindings. -->
     <script type="module" src="https://pagelove.github.io/beta-js/pagelove/sse.mjs"></script>
     <script type="module" src="https://pagelove.github.io/beta-js/pagelove.mjs"></script>
-    <script src="./app.js?v=6" defer></script>
+    <script src="./app.js?v=8" defer></script>
   </head>
   <body>
     <div class="ambient ambient--one"></div>
@@ -31,7 +33,7 @@
           <span class="brand__mark" aria-hidden="true">
             <span></span><span></span>
           </span>
-          <span class="brand__name">pixo</span>
+          <span class="brand__name" id="brand-name">pixo</span>
         </a>
 
         <nav class="nav-list">
@@ -81,7 +83,7 @@
 
         <section class="companion-card" aria-labelledby="companion-title">
           <div class="companion-card__copy">
-            <div class="status-pill"><span></span> Pixo is here</div>
+            <div class="status-pill"><span></span> <span id="presence-label">Pixo is here</span></div>
             <h2 id="companion-title">Let’s make today<br />feel a little lighter.</h2>
             <p id="pixo-message">I’ve got the small things. You bring the big ideas.</p>
             <button class="primary-button" id="begin-focus" type="button">
@@ -229,6 +231,23 @@
                 <span class="reminder-row__icon">🍲</span>
                 <div><strong>Time to eat</strong><small id="meal-summary">5:00 PM</small></div>
               </div>
+              <p class="next-care" id="next-care-summary">Finding your next care moment…</p>
+            </div>
+            <div class="hydration-tracker">
+              <div class="hydration-tracker__header">
+                <strong>Today’s water</strong>
+                <span id="water-count-summary">0 / 8 glasses</span>
+              </div>
+              <div
+                class="hydration-progress"
+                id="hydration-progress"
+                role="progressbar"
+                aria-label="Daily water progress"
+                aria-valuemin="0"
+                aria-valuemax="8"
+                aria-valuenow="0"
+              ><span></span></div>
+              <button class="water-button" id="log-water" type="button">+ Log a glass</button>
             </div>
             <div class="reminder-actions">
               <button class="secondary-button" id="edit-reminders" type="button">Edit times</button>
@@ -303,6 +322,8 @@
         <label for="water-times">Water reminder times</label>
         <input id="water-times" name="water-times" value="10:30, 13:00, 15:30" placeholder="10:30, 13:00, 15:30" />
         <small class="field-help">Use 24-hour times separated by commas.</small>
+        <label for="water-goal">Daily water goal</label>
+        <input id="water-goal" name="water-goal" type="number" min="4" max="16" step="1" value="8" />
         <label for="meal-time">Meal reminder time</label>
         <input id="meal-time" name="meal-time" type="time" value="17:00" />
         <button class="primary-button primary-button--wide" value="save">Save changes</button>
@@ -316,6 +337,7 @@
         <span data-field="name">friend</span>
         <span data-field="focus-length">25</span>
         <span data-field="water-times">10:30,13:00,15:30</span>
+        <span data-field="water-goal">8</span>
         <span data-field="meal-time">17:00</span>
       </div>
       <div id="focus-state">
@@ -333,6 +355,10 @@
         <span data-field="mood"></span>
         <span data-field="note"></span>
         <span data-field="date"></span>
+      </div>
+      <div id="care-state">
+        <span data-field="water-count">0</span>
+        <span data-field="water-date"></span>
       </div>
     </div>
 

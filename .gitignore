@@ -1,2 +1,6 @@
 .DS_Store
 desktop/PixoDesktop/build/
+.env
+.apikey
+dist/
+node_modules/

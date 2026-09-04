@@ -1,52 +1,121 @@
-# Pixo
+# Pixo — a PageLove companion template
 
-Pixo is a tiny digital companion who lives with you while you work. He remembers you, cares about your day, helps you focus, and grows alongside you.
+Build a tiny digital companion that helps people focus, remember their day, and care for themselves—without a database, framework, or account system.
 
-## What is included
+[Try the live Pixo companion](https://heat-flip-3234.onpagelove.com/) · [Read the template guide](./TEMPLATE_GUIDE.md)
 
-- A customizable companion profile and focus length
-- A focus timer with session, minutes, streak, XP, and level tracking
-- A gentle daily task list with add, complete, and delete actions
-- A daily mood check-in and a small memory timeline
-- Optional ambient room tone and accessible, responsive interactions
-- The supplied purple Pixo artwork with floating, breathing, entrance, hover, and celebration motion
-- Configurable water and meal reminders with an on-screen Pixo pop-up
-- A native macOS menu-bar companion that runs independently of the website
-- Native Pagelove session persistence and live mutation updates
+![Pixo, a cheerful purple companion carrying a notebook of ideas](./assets/pixo_2d.png)
 
-## Pagelove architecture
+## Why this template is useful
 
-This is intentionally a no-build application: plain HTML, CSS, and JavaScript, following the [Pagelove documentation](https://docs.pagelove.com/).
+Pixo gives makers a polished starting point for study buddies, wellness companions, focus tools, classroom helpers, and gentle personal dashboards. A visitor’s tasks, check-ins, preferences, progress, and reminders are saved as private PageLove session state—no backend code or database setup required.
 
-`index.html` loads Pagelove's documented `sse.mjs` and `pagelove.mjs` client pair. It contains the application data and selector-scoped `AuthorizationRule` microdata. The Pagelove client attaches native element methods after capability discovery:
+Included out of the box:
 
-- `PUT()` updates profile, focus, growth, check-in, and individual task elements.
-- `POST()` appends new tasks and memory entries.
-- `DELETE()` removes task elements.
+- An animated, keyboard-accessible companion with configurable name, copy, colors, and greetings
+- Focus timer, daily plan, streaks, XP, levels, mood check-ins, and a memory timeline
+- Configurable water and meal reminders with browser notifications and an on-screen Pixo pop-up
+- Daily hydration goal, one-click water logging, and a live countdown to the next care moment
+- Responsive desktop and mobile UI, ambient focus sound, and reduced-motion support
+- Session-private persistence powered by PageLove `PUT`, `POST`, and `DELETE` capabilities
+- A dependency-free build, contract tests, safe WebDAV deploy script, and two ready-made examples
+- Optional native macOS menu-bar companion in `desktop/PixoDesktop`
 
-Pixo's profile, focus stats, tasks, check-ins, memories, and reminder times use Pagelove's documented `p:transient` elements. Every browser receives a private PageLove-backed session, mutations never alter another visitor's canonical page, and transient content expires after PageLove's current 30-day server TTL. The `/*` permission pattern deliberately covers both the public `/` route and `/index.html`; write rules remain limited to those transient elements. `localStorage` is used only by a local development preview, with a one-time migration for data saved by older deployed versions.
-
-## Run locally
-
-Serve the folder with any static HTTP server. For example:
+## Start in two minutes
 
 ```bash
-python3 -m http.server 4173
+git clone https://github.com/pixawna/pixoworld.git
+cd pixoworld
+npm test
+npm run dev
 ```
 
-Then open `http://localhost:4173`.
+Open `http://localhost:4173`. Local previews use browser storage; deployed versions use private PageLove session state.
 
-## macOS desktop companion
+## Make it yours
 
-The desktop companion lives in `desktop/PixoDesktop`. It shows the supplied Pixo character in a floating reminder card at the configured times, includes a menu-bar control, supports snoozing, and can start automatically at login.
+Most variants only need one file: [`pixo.config.js`](./pixo.config.js).
 
-Default schedule:
+```js
+window.PIXO_TEMPLATE = Object.freeze({
+  id: "my-companion",
+  companion: {
+    name: "Pixo",
+    browserTitle: "Pixo — your tiny work companion",
+    heroTitle: "Let’s make today\nfeel a little lighter.",
+    heroMessage: "I’ve got the small things. You bring the big ideas.",
+    firstWords: "You’ve got this!",
+    greetings: ["I’m right here. ♡", "Tiny steps still count! ✦"],
+  },
+  appearance: {
+    accent: "#ffcc58",
+    accentSoft: "#fff1bf",
+    companionGlow: "rgba(122, 91, 224, 0.24)",
+  },
+  focus: { defaultMinutes: 25, options: [15, 25, 45, 60] },
+  care: { waterTimes: ["10:30", "13:00", "15:30"], mealTime: "17:00", waterGoal: 8 },
+  starterTasks: ["Choose today’s main thing", "Drink a glass of water", "Take a quiet stretch break"],
+});
+```
 
-- Water: 10:30 AM, 1:00 PM, and 3:30 PM
-- Meal: 5:00 PM
+Replace `assets/pixo_2d.png` to bring your own character. Motion, focus states, reminder cards, and responsive sizing are already handled by the template.
 
-Run `desktop/PixoDesktop/install.sh` to build and install it for the current macOS user. Open **Reminder Settings…** from the Pixo menu-bar icon to change any time.
+Try a prepared direction:
 
-## Deploy to Pagelove
+```bash
+npm run use-example -- study-buddy
+npm run use-example -- wellbeing
+```
 
-Open the [Pagelove console](https://console.pagelove.com/console/) and upload this folder to a host. No build command or server is required.
+See [`TEMPLATE_GUIDE.md`](./TEMPLATE_GUIDE.md) for the full customization contract.
+
+## How PageLove powers it
+
+This is intentionally plain HTML, CSS, and JavaScript. `index.html` loads PageLove’s documented live-update and element-method clients, marks private state with `p:transient`, and declares selector-scoped authorization rules.
+
+- `PUT()` updates profile, focus, growth, check-in, hydration, and individual tasks.
+- `POST()` appends tasks and memory entries.
+- `DELETE()` removes individual task and memory elements.
+- `/*` covers both `/` and `/index.html`, while write access stays restricted to transient state.
+
+Every browser gets its own server-backed transient state. The canonical template remains unchanged, so one visitor cannot overwrite another visitor’s companion data. Local storage is only a development fallback and a one-time migration path for earlier versions.
+
+The implementation follows PageLove’s [JavaScript guide](https://docs.pagelove.com/languages/javascript/), [transient elements reference](https://docs.pagelove.com/reference/composing-pages/Transient-Elements/), and [authorization rules](https://docs.pagelove.com/reference/permissions/AuthorizationRule/).
+
+## Project layout
+
+```text
+.
+├── pixo.config.js          # one-file companion customization
+├── index.html              # UI, transient state, and PageLove permissions
+├── app.js                  # focus, care, memories, and persistence
+├── styles.css              # responsive design and companion animation
+├── assets/                 # replaceable character artwork
+├── examples/               # study-buddy and wellbeing configurations
+├── desktop/PixoDesktop/    # optional native macOS companion
+├── scripts/                # build, deploy, and example-switching tools
+└── test/                   # configuration and PageLove contract tests
+```
+
+## Deploy to PageLove
+
+Create a host in the [PageLove console](https://console.pagelove.com/console/), then:
+
+```bash
+cp .env.example .env
+# Add your WebDAV URL, public URL, and API key to .env
+npm run deploy:dry
+npm run deploy
+```
+
+`.env` and `.apikey` are ignored by Git. Deployment uses conditional WebDAV writes to avoid silently overwriting concurrent changes and uploads `index.html` last.
+
+To upload manually, run `npm run build` and upload the contents of `dist/` to the PageLove host. Verify both the root route and an interaction such as logging a glass of water.
+
+## Optional macOS companion
+
+Run `desktop/PixoDesktop/install.sh` to build and install the menu-bar companion for the current macOS user. It can show the same character in a floating desktop reminder card, snooze reminders, and start at login. Reminder times can be changed from its menu-bar settings.
+
+## License
+
+[MIT](./LICENSE) — fork it, give your companion a personality, and make something kind.
