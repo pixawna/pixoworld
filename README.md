@@ -4,7 +4,7 @@ Build a tiny digital companion that helps people focus, remember their day and c
 
 [Try the live Pixo companion](https://heat-flip-3234.onpagelove.com/) · [Read the template guide](./TEMPLATE_GUIDE.md)
 
-![Pixo, a cheerful purple companion carrying a notebook of ideas](./assets/pixo_2d.png)
+![Pixo companion demo](./assets/demo_preview.gif)
 
 ## Why this template is useful
 

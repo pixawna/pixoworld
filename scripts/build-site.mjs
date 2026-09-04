@@ -15,7 +15,8 @@ for (const file of files) {
   cpSync(source, join(output, file));
 }
 
-cpSync(join(root, "assets"), join(output, "assets"), { recursive: true });
+mkdirSync(join(output, "assets"), { recursive: true });
+cpSync(join(root, "assets", "pixo_2d.png"), join(output, "assets", "pixo_2d.png"));
 
 const built = readdirSync(output, { recursive: true }).filter((entry) => !entry.endsWith(".DS_Store"));
 console.log(`Built ${built.length} files in dist/`);
