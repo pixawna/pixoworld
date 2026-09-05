@@ -4,3 +4,4 @@ desktop/PixoDesktop/build/
 .apikey
 dist/
 node_modules/
+vendor/

@@ -16,14 +16,54 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css?v=6" />
+    <link rel="stylesheet" href="./room.css?v=game2" />
+    <link rel="stylesheet" href="./game.css?v=game2" />
     <!-- Edit this one file to turn the template into your own companion. -->
     <script src="./pixo.config.js?v=1"></script>
     <!-- PageLove's documented client pair: live mutations first, then app bindings. -->
     <script type="module" src="https://pagelove.github.io/beta-js/pagelove/sse.mjs"></script>
     <script type="module" src="https://pagelove.github.io/beta-js/pagelove.mjs"></script>
-    <script src="./app.js?v=8" defer></script>
+    <script src="./app.js?v=game2" defer></script>
+    <script type="module" src="./room-life.js?v=game2"></script>
   </head>
-  <body>
+  <body class="game-mode">
+    <main class="world" id="pixo-world" aria-label="Pixo’s room">
+      <header class="world-header">
+        <a class="world-brand" href="#room"><span class="pixel-brand" aria-hidden="true">p</span>pixo<span class="world-edition">a little world, with you.</span></a>
+        <div class="world-tools"><span class="world-clock" id="world-clock"></span><button id="world-sound" aria-label="Toggle room sound" aria-pressed="false">♫</button><button id="world-settings" aria-label="Room and profile settings">⚙</button></div>
+      </header>
+      <section class="world-stage" aria-label="Interactive 3D room">
+        <div class="world-intro"><p class="world-eyebrow"><span class="live-dot"></span> YOUR LITTLE CORNER OF THE WORLD</p><h1>It’s good to have<br />you here.</h1><p id="world-welcome">A quiet room. A little company. Space to be you.</p></div>
+        <div class="world-day"><span>OUR STORY</span><strong id="world-day">Day 1</strong><small id="world-phase">Morning light</small></div>
+        <div id="room-canvas" class="room-canvas" aria-label="A cozy 3D pixel room with a sofa, desk, plants, and Pixo"><p id="room-loading">Making a little room for you…</p></div>
+        <div class="world-scene-tools"><label for="room-light">Light</label><select id="room-light"><option value="auto">With your day</option><option value="morning">Morning</option><option value="evening">Golden hour</option><option value="night">Night</option></select><button id="room-detail" aria-pressed="false">Pixel view</button><button id="room-reset" aria-label="Reset room camera">↺</button></div>
+        <span id="room-tooltip" class="room-tooltip" hidden></span>
+        <div class="world-speech"><span class="speech-avatar" aria-hidden="true">✦</span><div><span class="world-eyebrow">PIXO <i id="pixo-activity">settling in</i></span><p id="world-message" aria-live="polite">You don’t have to do everything today. Just come sit with me.</p></div><button data-room-panel="talk" aria-label="Talk to Pixo">↗</button></div>
+        <p class="room-hint">A room full of little things. Tap one to explore. <span>Drag gently to look around.</span></p>
+      </section>
+      <nav class="world-dock" aria-label="Pixo room activities">
+        <button data-room-panel="talk"><span>☏</span>Talk</button><button data-room-panel="focus"><span>◷</span>Focus</button><button data-room-panel="quest"><span>⚑</span>Today’s quest</button><button data-room-panel="care"><span>♧</span>Care</button><button data-room-panel="diary"><span>▤</span>Our diary</button><button data-room-panel="backpack"><span>▣</span>Backpack</button>
+      </nav>
+      <nav class="game-views" aria-label="Camera views">
+        <button data-view="home" aria-label="Whole home view" title="Whole home" aria-pressed="true">⌂</button>
+        <button data-view="desk" aria-label="Workspace view" title="Workspace" aria-pressed="false">▱</button>
+        <button data-view="table" aria-label="Dining view" title="Dining" aria-pressed="false">♨</button>
+        <button data-view="bed" aria-label="Bedroom view" title="Bedroom" aria-pressed="false">☾</button>
+      </nav>
+      <nav class="game-actions" aria-label="Do something with Pixo">
+        <button data-action="working" aria-label="Work with Pixo" title="Work with me">⌨</button>
+        <button data-action="eating" aria-label="Eat with Pixo" title="Eat with me">♨</button>
+        <button data-action="water" aria-label="Drink water with Pixo" title="Drink with me">♧</button>
+        <button data-action="sleeping" aria-label="Put Pixo to bed" title="Sleep">☾</button>
+        <button data-action="idle" aria-label="Wake Pixo and return home" title="Wake up / explore">☀</button>
+      </nav>
+      <div class="game-connection"><button id="game-voice" aria-label="Talk with Pixo" title="Talk with Pixo">♬</button><button id="game-shield" aria-label="Focus shield settings" title="Focus shield">◇</button><button id="game-fullscreen" aria-label="Toggle fullscreen" title="Fullscreen">⛶</button></div>
+      <div class="voice-live" id="voice-live" hidden><span id="voice-live-status" role="status">Connecting</span><button id="voice-mute" aria-label="Mute microphone" aria-pressed="false">◉</button><button id="voice-end" aria-label="End conversation">×</button></div>
+      <footer class="world-footer"><span id="world-sync">Your little world is loading</span><span>made for company, not just productivity <span aria-hidden="true">✦</span></span><a href="https://pagelove.com/" target="_blank" rel="noreferrer">Powered by PageLove ↗</a></footer>
+      <div class="world-focus" id="world-focus" hidden><span class="live-dot"></span><span id="world-focus-label">Working together</span><strong id="world-timer">25:00</strong><button id="world-pause">Pause</button><button data-room-panel="focus" aria-label="Open focus timer">↗</button></div>
+    </main>
+    <dialog class="world-dialog" id="world-dialog" aria-labelledby="world-panel-title"><header><div><p class="world-eyebrow">A LITTLE TIME WITH PIXO</p><h2 id="world-panel-title">Our little corner</h2></div><button id="world-panel-close" aria-label="Back to room">×</button></header><div id="world-panel-content"></div></dialog>
+    <dialog class="hatch-dialog" id="hatch-dialog" aria-labelledby="hatch-title"><p class="world-eyebrow">A SMALL BEGINNING</p><div class="pixel-egg" aria-hidden="true">✦</div><h2 id="hatch-title">Someone’s waiting<br />to meet you.</h2><p>A tiny companion. A room of your own.<br />A little more company in your day.</p><form id="hatch-form"><label for="hatch-name">What should Pixo call you?</label><input id="hatch-name" maxlength="32" placeholder="Your name" required autocomplete="given-name"/><button type="submit">Wake up Pixo <span>↗</span></button></form><button id="hatch-skip" class="hatch-skip">Let me look around first</button></dialog>
     <div class="ambient ambient--one"></div>
     <div class="ambient ambient--two"></div>
 

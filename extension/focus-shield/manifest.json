@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Pixo Focus Shield",
+  "version": "1.0.0",
+  "description": "Block social websites only during your Pixo focus sessions. No browsing history is collected.",
+  "permissions": ["declarativeNetRequest", "storage", "alarms"],
+  "host_permissions": ["*://*.twitter.com/*", "*://*.x.com/*", "*://*.linkedin.com/*", "*://*.youtube.com/*", "*://*.youtu.be/*", "*://*.instagram.com/*"],
+  "background": {"service_worker": "worker.js", "type": "module"},
+  "content_scripts": [{"matches": ["https://heat-flip-3234.onpagelove.com/*", "http://localhost:4173/*", "http://127.0.0.1:4173/*"], "js": ["bridge.js"], "run_at": "document_start"}],
+  "action": {"default_title": "Pixo Focus Shield", "default_popup": "popup.html"},
+  "web_accessible_resources": [{"resources": ["blocked.html", "blocked.js", "shield.css"], "matches": ["*://*.twitter.com/*", "*://*.x.com/*", "*://*.linkedin.com/*", "*://*.youtube.com/*", "*://*.youtu.be/*", "*://*.instagram.com/*"]}]
+}

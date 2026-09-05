@@ -12,13 +12,16 @@ Pixo gives makers a polished starting point for study buddies, wellness companio
 
 Included out of the box:
 
-- An animated, keyboard-accessible companion with configurable name, copy, colors, and greetings
+- A real-time 3D voxel room with soft shadows, warm lamps, animated fish, and a purple Pixo in his orange beanie
+- Clickable furniture and keyboard-accessible activity buttons; adjustable daylight, golden hour, night, and pixel rendering
+- Pixo works at his laptop, reads, checks on his plant, and gets sleepy with the time of day
+- A first-meeting introduction, daily quest, editable diary, user-controlled memories, and keepsakes earned through time and care
 - Focus timer, daily plan, streaks, XP, levels, mood check-ins, and a memory timeline
 - Configurable water and meal reminders with browser notifications and an on-screen Pixo pop-up
 - Daily hydration goal, one-click water logging, and a live countdown to the next care moment
 - Responsive desktop and mobile UI, ambient focus sound, and reduced-motion support
 - Session-private persistence powered by PageLove `PUT`, `POST`, and `DELETE` capabilities
-- A dependency-free build, contract tests, safe WebDAV deploy script, and two ready-made examples
+- A small build with a pinned, self-hosted Three.js renderer, contract tests, safe WebDAV deploy script, and two ready-made examples
 - Optional native macOS menu-bar companion in `desktop/PixoDesktop`
 
 ## Start in two minutes
@@ -26,6 +29,7 @@ Included out of the box:
 ```bash
 git clone https://github.com/pixawna/pixoworld.git
 cd pixoworld
+npm ci
 npm test
 npm run dev
 ```
@@ -58,7 +62,7 @@ window.PIXO_TEMPLATE = Object.freeze({
 });
 ```
 
-Replace `assets/pixo_2d.png` to bring your own character. Motion, focus states, reminder cards, and responsive sizing are already handled by the template.
+The room and voxel character are built from geometry in `room-scene.js`; replacing an image does not change the 3D character. `room.css` controls the room interface, while `pixo.config.js` configures the existing focus, care, and profile tools. `assets/pixo_2d.png` remains the artwork for browser reminder cards and the optional desktop companion.
 
 Try a prepared direction:
 
@@ -73,12 +77,14 @@ See [`TEMPLATE_GUIDE.md`](./TEMPLATE_GUIDE.md) for the full customization contra
 
 This is intentionally plain HTML, CSS, and JavaScript. `index.html` loads PageLove’s documented live-update and element-method clients, marks private state with `p:transient`, and declares selector-scoped authorization rules.
 
-- `PUT()` updates profile, focus, growth, check-in, hydration, and individual tasks.
+- `PUT()` updates profile, focus, growth, check-in, hydration, individual tasks, and room state (diary, memories, keepsakes, and preferences).
 - `POST()` appends tasks and memory entries.
 - `DELETE()` removes individual task and memory elements.
 - `/*` covers both `/` and `/index.html`, while write access stays restricted to transient state.
 
 Every browser gets its own server-backed transient state. The canonical template remains unchanged, so one visitor cannot overwrite another visitor’s companion data. Local storage is only a development fallback and a one-time migration path for earlier versions.
+
+This is session memory, not an account or cross-device backup. Keep the page open for web reminders; browser notifications require permission. The room’s Talk panel offers guided check-ins, not AI-generated conversation. A server-side AI connection is intentionally deferred; no API key belongs in this frontend.
 
 The implementation follows PageLove’s [JavaScript guide](https://docs.pagelove.com/languages/javascript/), [transient elements reference](https://docs.pagelove.com/reference/composing-pages/Transient-Elements/), and [authorization rules](https://docs.pagelove.com/reference/permissions/AuthorizationRule/).
 
@@ -89,6 +95,10 @@ The implementation follows PageLove’s [JavaScript guide](https://docs.pagelove
 ├── pixo.config.js          # one-file companion customization
 ├── index.html              # UI, transient state, and PageLove permissions
 ├── app.js                  # focus, care, memories, and persistence
+├── room-scene.js           # real-time voxel geometry, lighting, and animation
+├── room-life.js            # room interactions and PageLove persistence bridge
+├── room-model.js           # dates, room state, and keepsake milestones
+├── room.css                # room layout, dialogs, and mobile presentation
 ├── styles.css              # responsive design and companion animation
 ├── assets/                 # replaceable character artwork
 ├── examples/               # study-buddy and wellbeing configurations
@@ -114,7 +124,7 @@ To upload manually, run `npm run build` and upload the contents of `dist/` to th
 
 ## Optional macOS companion
 
-Run `desktop/PixoDesktop/install.sh` to build and install the menu-bar companion for the current macOS user. It can show the same character in a floating desktop reminder card, snooze reminders, and start at login. Reminder times can be changed from its menu-bar settings.
+Run `desktop/PixoDesktop/install.sh` to build and install the menu-bar companion for the current macOS user. It uses the original 2D character in a floating desktop reminder card, can snooze reminders, and can start at login. Its reminder settings are separate from the website; the new 3D room runs in the browser.
 
 ## License
 

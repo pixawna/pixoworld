@@ -1,0 +1,51 @@
+/* Immersive shell. Visible text is reserved for a requested panel or a brief subtitle. */
+.game-mode { margin:0;overflow:hidden;background:#24272d; }
+.game-mode::before { display:none; }
+.game-mode .world { position:fixed;inset:0;max-width:none;padding:0;overflow:hidden;background:radial-gradient(ellipse at 50% 38%,#737366 0%,#414945 52%,#202c30 100%); }
+.game-mode .world-stage { position:absolute;inset:0;min-height:0; }
+.game-mode .room-canvas { position:absolute;inset:0;height:100%;width:100%;padding:0;touch-action:none; }
+.game-mode .room-canvas canvas { touch-action:none; }
+.game-mode .world-intro,.game-mode .world-day,.game-mode .world-edition,.game-mode .room-hint,.game-mode .world-brand,.game-mode .world-footer { display:none; }
+.game-mode .world-header { position:absolute;top:18px;right:22px;height:auto;border:0;z-index:5; }
+.game-mode .world-clock { color:#fff9e5;opacity:.85;text-shadow:0 1px 4px #000;font-size:12px; }
+.game-mode .world-tools button,.game-mode .world-scene-tools button,.game-mode .game-views button,.game-mode .game-actions button,.game-mode .game-connection button { width:42px;height:42px;border:1px solid #ffffff2b;background:#202a29ba;color:#f5eed7;backdrop-filter:blur(16px);box-shadow:0 4px 16px #0002;display:grid;place-items:center;border-radius:13px;cursor:pointer;font:23px Georgia;transition:background .2s,transform .2s; }
+.game-mode button:hover { filter:brightness(1.12); }
+.game-mode .world-scene-tools { bottom:105px;right:22px;gap:6px; }
+.game-mode .world-scene-tools label,.game-mode #room-detail { display:none; }
+.game-mode .world-scene-tools select { background:#202a29c9;color:#f4efde;border-color:#ffffff2b;padding:9px;font:11px 'DM Sans',sans-serif;backdrop-filter:blur(16px); }
+.game-mode .world-scene-tools #room-reset { width:34px;height:34px; }
+.game-mode .world-dock { position:absolute;bottom:24px;left:50%;transform:translateX(-50%);margin:0;padding:7px;gap:5px;background:#1e292bd9;border-color:#ffffff26;backdrop-filter:blur(18px);border-radius:20px;z-index:5; }
+.game-mode .world-dock button { min-width:46px;width:46px;height:46px;padding:8px;gap:0;font-size:0;background:transparent;border-radius:13px;box-shadow:none; }
+.game-mode .world-dock button span { color:#e6dfcf;font:25px Georgia; }
+.game-mode .world-dock button:hover,.game-mode .world-dock button:focus-visible { background:#c0ad8040; }
+.game-views,.game-actions,.game-connection { position:absolute;display:flex;gap:8px;z-index:5; }
+.game-views { left:22px;top:20px; }
+.game-actions { left:22px;bottom:28px; }
+.game-connection { right:22px;bottom:28px; }
+.game-mode .game-views [aria-pressed=true],.game-mode .game-actions [aria-pressed=true] { background:#b89e6bea;border-color:#f2d99d;color:#221e19; }
+.game-mode .game-connection .is-protected { background:#5d8057; }
+.game-mode .world-speech { position:absolute;bottom:112px;left:50%;transform:translate(-50%,10px);margin:0;width:min(470px,calc(100% - 36px));background:#192725e0;color:#fff6df;border:1px solid #c1c8b42e;backdrop-filter:blur(20px);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;box-shadow:0 8px 24px #0002;z-index:4; }
+.game-mode .world-speech.is-speaking { opacity:1;transform:translate(-50%,0); }
+.game-mode .world-speech::before,.game-mode .world-speech .world-eyebrow,.game-mode .speech-avatar,.game-mode .world-speech button { display:none; }
+.game-mode .world-speech p { font-size:13px;margin:0;text-align:center; }
+.game-mode .world-speech > div { width:100%; }
+.game-mode .world-focus { top:20px;border-radius:15px;background:#203d2dd9;backdrop-filter:blur(20px); }
+.game-mode #world-focus-label { display:none; }
+.game-mode .screen-reminder { display:none!important; }
+.game-mode .room-tooltip { background:#1e2a29e6;color:#f3ead4;border-color:#ffffff2e; }
+.game-mode #room-loading { color:#eae1cb; }
+.game-mode .world-dialog { background:#f4f0e7; }
+.game-mode .world-dialog > header .world-eyebrow { display:none; }
+.game-mode #toast { z-index:100; }
+.voice-live { position:fixed;right:22px;top:80px;z-index:30;display:flex;align-items:center;gap:12px;background:#172c24ec;color:#e0f4df;padding:11px 14px;border:1px solid #7eae8559;border-radius:15px;max-width:calc(100% - 30px);font-size:12px; }
+.voice-live[hidden] { display:none; }
+.voice-live button { color:inherit;border:1px solid #739c754a;border-radius:50%;background:transparent;width:32px;height:32px;cursor:pointer; }
+.voice-privacy { padding:12px;border-radius:12px;background:#e4e9df;font-size:12px;line-height:1.6; }
+.voice-status { margin:16px 0;font-size:12px;line-height:1.6;color:#576a4b; }
+.voice-transcript { max-height:200px;overflow:auto;white-space:pre-wrap;font-size:13px;line-height:1.6; }
+.world-form input[type=checkbox] { width:auto; }
+.shield-state { border:1px solid #d1d8c6;padding:14px;border-radius:12px;margin-bottom:18px;font-size:13px;line-height:1.7; }
+.shield-state strong { display:block; }
+@media(max-width:1050px) { .game-actions{bottom:100px;left:18px}.game-mode .world-scene-tools{bottom:162px}.game-mode .world-dock{left:18px;transform:none}.game-mode .world-speech{bottom:220px}.game-mode .world-focus{top:78px}.game-mode .world-header{right:18px}.game-views{left:18px}.voice-live{top:134px} }
+@media(max-width:600px) { .game-mode .world-header{top:16px;right:12px}.game-mode .world-clock{display:none}.game-views{top:16px;left:12px;gap:5px}.game-mode .game-views button,.game-mode .world-tools button{width:34px;height:34px;font-size:20px}.game-mode .world-dock{bottom:18px;left:12px;right:12px;width:auto;max-width:none;justify-content:space-between;padding:6px;gap:0}.game-mode .world-dock button{width:42px;min-width:0;height:42px}.game-actions{left:12px;bottom:87px;gap:5px}.game-mode .game-actions button{width:34px;height:34px;font-size:21px}.game-connection{right:12px;bottom:87px;gap:5px}.game-mode .game-connection button{width:34px;height:34px;font-size:20px}.game-mode .world-scene-tools{right:12px;bottom:138px}.game-mode .world-speech{bottom:192px}.game-mode .world-focus{top:64px}.voice-live{right:12px;top:114px}.game-mode .world-dialog{max-height:83dvh}.room-fallback{inset:20% 8%} }
+@media(prefers-reduced-motion:reduce) { .game-mode *{transition:none!important} }

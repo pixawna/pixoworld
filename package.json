@@ -6,6 +6,7 @@
   "description": "A customizable digital companion template for focus, check-ins, care reminders, and private PageLove-backed memory.",
   "license": "MIT",
   "scripts": {
+    "predev": "node scripts/prepare-room.mjs",
     "dev": "python3 -m http.server 4173",
     "build": "node scripts/build-site.mjs",
     "test": "node --test test/*.test.mjs",
@@ -15,5 +16,8 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "three": "0.180.0"
   }
 }

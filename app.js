@@ -82,6 +82,7 @@
   };
 
   const animatePixo = (message = `${companionName} is right here. ♡`) => {
+    document.dispatchEvent(new CustomEvent("pixo:speak", { detail: { message, celebrate: true } }));
     const pixo = $("#pixo-character");
     $("#speech-bubble").textContent = message;
     pixo.classList.remove("is-celebrating");
@@ -128,6 +129,7 @@
       waterCount: readState(careState, "water-count", "0"),
       waterDate: readState(careState, "water-date", ""),
     },
+    world: document.querySelector("#world-state")?.textContent || "",
     tasks: taskList.innerHTML,
     memories: memoryLog.innerHTML,
   });
@@ -136,8 +138,10 @@
     if (isPageLoveHost()) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot()));
+      return true;
     } catch (error) {
       console.warn("Pixo could not save a local preview snapshot.", error);
+      return false;
     }
   };
 
@@ -165,6 +169,11 @@
       writeState(careState, "water-date", saved.care?.waterDate || "");
       if (saved.tasks) taskList.innerHTML = saved.tasks;
       if (saved.memories) memoryLog.innerHTML = saved.memories;
+      if (saved.world) {
+        let world = document.querySelector("#world-state");
+        if (!world) { world = document.createElement("div"); world.id = "world-state"; appPersistentState.append(world); }
+        world.textContent = saved.world;
+      }
     } catch (error) {
       console.warn("Pixo found an unreadable local preview snapshot.", error);
     }
@@ -230,8 +239,10 @@
     const canWrite = await waitForPageLoveMethod(element, "PUT");
     if (!canWrite) {
       if (!isPageLoveHost()) {
-        saveLocal();
-        setSyncStatus("Saved locally");
+        const saved = saveLocal();
+        setSyncStatus(saved ? "Saved locally" : "Local storage unavailable");
+        if (!saved) showToast("Pixo could not save. Please allow browser storage and try again.");
+        return saved;
       } else {
         setSyncStatus("PageLove connection unavailable");
         showToast("Pixo could not reach PageLove. Please try again.");
@@ -344,13 +355,16 @@
 
     const hasPersonalActivity = Boolean(
       readState(checkinState, "note", "")
+      || readState(profileState, "name", "friend") !== "friend"
+      || $$(".task input:checked", taskList).length
       || Number(readState(focusState, "sessions", "0"))
       || readState(careState, "water-date", ""),
     );
     const starterTasks = Array.isArray(CONFIG.starterTasks) ? CONFIG.starterTasks.filter(Boolean).slice(0, 8) : [];
     const isDefaultTaskList = $$(".task", taskList).every((task) => ["task-welcome", "task-water", "task-stretch"].includes(task.id));
     if (!hasPersonalActivity && isDefaultTaskList && starterTasks.length) {
-      taskList.replaceChildren(...starterTasks.map((label, index) => makeTask(`starter-${index + 1}`, String(label))));
+      const existing = $$(".task", taskList);
+      existing.forEach((task, index) => { if (starterTasks[index]) $(".task__text", task).textContent = String(starterTasks[index]); });
       writeState(profileState, "focus-length", String(defaultFocusLength));
       writeState(profileState, "water-times", defaultWaterTimesValue);
       writeState(profileState, "water-goal", String(defaultWaterGoal));
@@ -459,6 +473,7 @@
   };
 
   const showScreenReminder = (kind = "water") => {
+    document.dispatchEvent(new CustomEvent("pixo:care", { detail: { kind } }));
     const reminder = $("#screen-reminder");
     const isMeal = kind === "meal";
     const mealTime = prettyTime(reminderTimes().meal[0]);
@@ -516,7 +531,7 @@
   };
 
   const rollDailyStatsForward = () => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = localDateKey();
     const recordedDate = readState(focusState, "daily-date", "");
     if (recordedDate === today) return;
     writeState(focusState, "sessions", "0");
@@ -579,6 +594,7 @@
     document.title = timer.running
       ? `${timerDisplay.textContent} · ${companionName} focus`
       : (COMPANION.browserTitle || `${companionName} — your tiny work companion`);
+    document.dispatchEvent(new CustomEvent("pixo:timer", { detail: { running: timer.running, remaining: timer.remaining, duration: timer.duration } }));
   };
 
   const tickTimer = () => {
@@ -619,9 +635,10 @@
     window.clearInterval(timer.interval);
     timer.running = false;
     const focusMinutes = Math.round(timer.duration / 60);
-    const today = new Date().toISOString().slice(0, 10);
+    rollDailyStatsForward();
+    const today = localDateKey();
     const lastDate = readState(focusState, "last-focus-date", "");
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const yesterday = localDateKey(new Date(Date.now() - 86400000));
     const sessions = Number(readState(focusState, "sessions", "0")) + 1;
     const minutes = Number(readState(focusState, "minutes", "0")) + focusMinutes;
     let streak = Number(readState(focusState, "streak", "1"));
@@ -640,6 +657,7 @@
     animatePixo("You did it. Breathe. ♡");
     $("#pixo-message").textContent = "That was real progress. Let’s take a tiny pause before the next thing.";
     playChime();
+    document.dispatchEvent(new Event("pixo:completed"));
   };
 
   const makeTask = (id, text) => {
@@ -920,4 +938,17 @@
   };
 
   init();
+  window.PixoApp = {
+    getState: snapshot,
+    timer: () => ({ running: timer.running, remaining: timer.remaining, duration: timer.duration }),
+    toggleTimer, resetTimer, logWater, addTask, applyMood, saveCheckin,
+    saveWorld: async (world) => {
+      let node = document.querySelector("#world-state");
+      if (!node) { node = document.createElement("div"); node.id = "world-state"; appPersistentState.append(node); }
+      node.textContent = JSON.stringify(world);
+      return persist(appPersistentState, "");
+    },
+    setName: async (name) => { writeState(profileState, "name", name); updateProfileUI(); return persist(profileState, ""); },
+  };
+  document.dispatchEvent(new Event("pixo:ready"));
 })();
