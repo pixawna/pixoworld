@@ -5,3 +5,4 @@ desktop/PixoDesktop/build/
 dist/
 node_modules/
 vendor/
+downloads/

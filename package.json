@@ -10,6 +10,7 @@
     "dev": "python3 -m http.server 4173",
     "build": "node scripts/build-site.mjs",
     "test": "node --test test/*.test.mjs",
+    "voice:server": "node --env-file=server/.env server/voice-server.mjs",
     "deploy": "npm run build && node scripts/deploy.mjs",
     "deploy:dry": "npm run build && node scripts/deploy.mjs --dry-run",
     "use-example": "node scripts/use-example.mjs"

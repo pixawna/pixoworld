@@ -6,7 +6,8 @@ export function createShield(api,now=Date.now) {
     const sessions=activeSessions(data.sessions,now());
     const enabled=data.enabled!==false,until=enabled?Math.max(0,...Object.values(sessions)):0;
     const existing=await api.declarativeNetRequest.getSessionRules();
-    await api.declarativeNetRequest.updateSessionRules({removeRuleIds:existing.map(r=>r.id),addRules:until?rules():[]});
+    const desired=until?rules():[];
+    if(JSON.stringify(existing)!==JSON.stringify(desired))await api.declarativeNetRequest.updateSessionRules({removeRuleIds:existing.map(r=>r.id),addRules:desired});
     await api.storage.session.set({sessions:enabled?sessions:{}});
     await api.alarms.clear('pixo-release');
     if(until)await api.alarms.create('pixo-release',{when:Math.min(...Object.values(sessions))});

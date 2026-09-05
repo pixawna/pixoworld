@@ -1,5 +1,5 @@
-export function createFocusShield(getTimer,onChange) {
-  let enabled=false,lastSignature='',status={installed:false,active:false},pending=new Map();
+export function createFocusShield(getTimer,onChange,initialEnabled=false) {
+  let enabled=Boolean(initialEnabled),lastSignature='',status={installed:false,active:false},pending=new Map();
   const ask=(type,payload={})=>new Promise(resolve=>{
     const id=crypto.randomUUID();const timeout=setTimeout(()=>{pending.delete(id);resolve({installed:false,active:false});},1500);
     pending.set(id,{resolve,timeout});window.postMessage({source:'pixo-focus-page',id,type,...payload},location.origin);

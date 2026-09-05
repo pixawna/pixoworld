@@ -22,7 +22,7 @@ export class PixoVoice {
       pc.ontrack=event=>{audio.srcObject=event.streams[0];audio.play().catch(()=>this.status('connected','Tap Resume audio to hear Pixo.'));};
       stream.getTracks().forEach(track=>pc.addTrack(track,stream));
       const channel=this.channel=pc.createDataChannel('oai-events');
-      channel.onopen=()=>{if(generation!==this.generation)return;this.status('connected','Listening — say hello.');};
+      channel.onopen=()=>{if(generation!==this.generation)return;clearTimeout(this.connectTimeout);this.status('connected','Listening — say hello.');};
       channel.onmessage=e=>{
         if(generation!==this.generation)return;
         let event;try{event=JSON.parse(e.data);}catch{return;}
@@ -43,7 +43,6 @@ export class PixoVoice {
       const answer=await response.text();
       if(generation!==this.generation)return;
       await pc.setRemoteDescription({type:'answer',sdp:answer});
-      clearTimeout(this.connectTimeout);
     } catch(error) {
       if(generation!==this.generation)return;
       this.stop();this.status('error',error.name==='NotAllowedError'?'Microphone permission was denied. You control access in browser settings.':error.message||'Could not connect.');

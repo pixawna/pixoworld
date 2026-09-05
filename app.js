@@ -36,6 +36,8 @@
     endAt: null,
     interval: null,
   };
+  // Per-tab runtime only: PageLove still owns completed focus totals and preferences.
+  const savedTimer = (() => {try{return JSON.parse(sessionStorage.getItem('pixo-focus-runtime'));}catch{return null;}})();
   let selectedMood = "";
   let toastTimeout;
   let pixoAnimationTimeout;
@@ -584,6 +586,7 @@
   };
 
   const renderTimer = () => {
+    try { sessionStorage.setItem('pixo-focus-runtime', JSON.stringify({duration:timer.duration,remaining:timer.remaining,running:timer.running,endAt:timer.endAt})); } catch {}
     const minutes = Math.floor(timer.remaining / 60);
     const seconds = timer.remaining % 60;
     timerDisplay.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
@@ -938,9 +941,16 @@
   };
 
   init();
+  if(savedTimer&&Number.isFinite(savedTimer.duration)&&savedTimer.duration>0&&savedTimer.duration<=14400) {
+    timer.duration=savedTimer.duration;
+    if(savedTimer.running&&Number.isFinite(savedTimer.endAt)&&savedTimer.endAt>Date.now()&&savedTimer.endAt<=Date.now()+14400000){
+      timer.running=true;timer.endAt=savedTimer.endAt;timer.remaining=Math.ceil((timer.endAt-Date.now())/1000);timer.interval=window.setInterval(tickTimer,500);
+    }else{timer.remaining=savedTimer.running?timer.duration:Math.max(1,Math.min(timer.duration,Number(savedTimer.remaining)||timer.duration));}
+    renderTimer();
+  }
   window.PixoApp = {
     getState: snapshot,
-    timer: () => ({ running: timer.running, remaining: timer.remaining, duration: timer.duration }),
+    timer: () => ({ running: timer.running, remaining: timer.remaining, duration: timer.duration, endAt:timer.endAt }),
     toggleTimer, resetTimer, logWater, addTask, applyMood, saveCheckin,
     saveWorld: async (world) => {
       let node = document.querySelector("#world-state");

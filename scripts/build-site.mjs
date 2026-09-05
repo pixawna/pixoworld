@@ -1,10 +1,11 @@
 import { cpSync, existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFileSync } from 'node:child_process';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const output = join(root, "dist");
-const files = ["index.html", "styles.css", "app.js", "pixo.config.js", "room.css", "room-life.js", "room-scene.js", "room-model.js", "LICENSE"];
+const files = ["index.html", "styles.css", "app.js", "pixo.config.js", "room.css", "game.css", "room-life.js", "room-scene.js", "room-model.js", "voice-client.js", "small-talk.js", "small-talk-panel.js", "focus-shield.js", "LICENSE"];
 
 rmSync(output, { recursive: true, force: true });
 mkdirSync(output, { recursive: true });
@@ -22,6 +23,8 @@ for (const file of ["three.module.js", "three.core.js"]) {
   cpSync(join(root, "node_modules", "three", "build", file), join(output, "vendor", file));
 }
 cpSync(join(root, "node_modules", "three", "LICENSE"), join(output, "vendor", "THREE-LICENSE.txt"));
+mkdirSync(join(output,'downloads'),{recursive:true});
+execFileSync('zip',['-q','-r',join(output,'downloads','pixo-focus-shield.zip'),'focus-shield'],{cwd:join(root,'extension')});
 
 const built = readdirSync(output, { recursive: true }).filter((entry) => !entry.endsWith(".DS_Store"));
 console.log(`Built ${built.length} files in dist/`);

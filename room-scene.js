@@ -15,7 +15,7 @@ export function createRoom(host, onSelect) {
   const camera = new THREE.OrthographicCamera(-7, 7, 6, -6, .1, 80);
   const target = new THREE.Vector3(1.6, 1.3, .2);
   const views = {
-    home: { target:[1.6,1.3,.2], angle:.65, height:12.8, width:18.6, elevation:10 },
+    home: { target:[1.6,1.6,.2], angle:.65, height:14.2, width:19.2, elevation:10 },
     desk: { target:[1.35,1.1,1.35], angle:.45, height:5.8, width:7.8, elevation:7 },
     table: { target:[-2,1,2.15], angle:.5, height:5.7, width:7.5, elevation:7 },
     bed: { target:[6.35,1.0,-.45], angle:.52, height:6.2, width:8, elevation:8 },

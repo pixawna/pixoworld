@@ -1,3 +1,10 @@
+.small-talk-log { max-height:230px;overflow:auto;margin:16px 0;overscroll-behavior:contain; }
+.small-talk-message { background:#fff6df;border:1px solid #d9cdbb;border-radius:14px;padding:12px 14px;margin:8px 0;line-height:1.6;overflow-wrap:anywhere; }
+.small-talk-message.from-you { background:#e7ede5;margin-left:24px; }
+.small-talk-read { display:flex;align-items:center;gap:8px;margin:16px 0;font-size:14px; }
+.small-talk-advanced { margin-top:22px;border-top:1px solid #d9cdbb;padding-top:16px; }
+.small-talk-advanced summary { cursor:pointer;font-size:13px; }
+#small-talk-mic:disabled { opacity:.55;cursor:not-allowed; }
 /* Immersive shell. Visible text is reserved for a requested panel or a brief subtitle. */
 .game-mode { margin:0;overflow:hidden;background:#24272d; }
 .game-mode::before { display:none; }
@@ -26,6 +33,7 @@
 .game-mode .game-connection .is-protected { background:#5d8057; }
 .game-mode .world-speech { position:absolute;bottom:112px;left:50%;transform:translate(-50%,10px);margin:0;width:min(470px,calc(100% - 36px));background:#192725e0;color:#fff6df;border:1px solid #c1c8b42e;backdrop-filter:blur(20px);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;box-shadow:0 8px 24px #0002;z-index:4; }
 .game-mode .world-speech.is-speaking { opacity:1;transform:translate(-50%,0); }
+.game-mode .world-speech:not(.is-speaking) { visibility:hidden; }
 .game-mode .world-speech::before,.game-mode .world-speech .world-eyebrow,.game-mode .speech-avatar,.game-mode .world-speech button { display:none; }
 .game-mode .world-speech p { font-size:13px;margin:0;text-align:center; }
 .game-mode .world-speech > div { width:100%; }
@@ -49,3 +57,6 @@
 @media(max-width:1050px) { .game-actions{bottom:100px;left:18px}.game-mode .world-scene-tools{bottom:162px}.game-mode .world-dock{left:18px;transform:none}.game-mode .world-speech{bottom:220px}.game-mode .world-focus{top:78px}.game-mode .world-header{right:18px}.game-views{left:18px}.voice-live{top:134px} }
 @media(max-width:600px) { .game-mode .world-header{top:16px;right:12px}.game-mode .world-clock{display:none}.game-views{top:16px;left:12px;gap:5px}.game-mode .game-views button,.game-mode .world-tools button{width:34px;height:34px;font-size:20px}.game-mode .world-dock{bottom:18px;left:12px;right:12px;width:auto;max-width:none;justify-content:space-between;padding:6px;gap:0}.game-mode .world-dock button{width:42px;min-width:0;height:42px}.game-actions{left:12px;bottom:87px;gap:5px}.game-mode .game-actions button{width:34px;height:34px;font-size:21px}.game-connection{right:12px;bottom:87px;gap:5px}.game-mode .game-connection button{width:34px;height:34px;font-size:20px}.game-mode .world-scene-tools{right:12px;bottom:138px}.game-mode .world-speech{bottom:192px}.game-mode .world-focus{top:64px}.voice-live{right:12px;top:114px}.game-mode .world-dialog{max-height:83dvh}.room-fallback{inset:20% 8%} }
 @media(prefers-reduced-motion:reduce) { .game-mode *{transition:none!important} }
+@media(max-width:360px) { .game-actions,.game-connection{gap:4px}.game-mode .game-actions button,.game-mode .game-connection button{width:30px;height:32px;font-size:19px} }
+/* Leave room for PageLove's hosting attribution and mobile safe-area chrome. */
+.game-mode .world-dock,.game-actions,.game-connection,.game-mode .world-scene-tools,.game-mode .world-speech { margin-bottom:calc(32px + env(safe-area-inset-bottom,0px)); }

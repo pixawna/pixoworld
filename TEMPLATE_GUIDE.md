@@ -27,7 +27,9 @@ Replace `assets/pixo_2d.png` with a transparent PNG to change the separate remin
 - Daylight follows the device clock, with manual morning, golden-hour, and night previews.
 - Pixo moves to the laptop during focus, reads or visits the plant while idle, and gets sleepy at night.
 - Memories are explicitly entered and removable. Diary pages contain the visitor’s note and actual logged focus/water totals; they are not AI-generated.
-- The Talk panel provides guided actions. Connect a protected server-side AI endpoint later if you add open-ended conversation.
+- Talk defaults to scripted small talk with no API keys or server setup: typed messages, browser read-aloud, and optional single-message microphone input. Edit `small-talk.js` for reply intents and `small-talk-panel.js` for the UI. Unknown messages receive an honest fallback, not fabricated AI answers. Chat is tab-only and is not automatically saved as memory; it does not execute commands or change timers. Microphone recognition may require an online browser service; typed replies work locally. An optional advanced WebRTC AI mode remains behind a collapsed settings section; see [setup](./SETUP_VOICE_AND_FOCUS.md).
+- The game HUD opens directly, with whole-home, workspace, dining, and bedroom cameras. Change the `views` map and activity destinations in `room-scene.js` together when moving furniture.
+- The optional browser shield blocks social sites only after installation and opt-in. Forks must update the exact allowed PageLove origin in the extension manifest and policy.
 - Browser reminders require an open page. Notifications need explicit permission; they do not turn the website into a background desktop process.
 - PageLove state is private to the browser session, not an account-based cross-device archive.
 

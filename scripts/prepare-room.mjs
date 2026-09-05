@@ -1,7 +1,10 @@
 import { cpSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import {execFileSync} from 'node:child_process';
 const root = new URL('../', import.meta.url);
 mkdirSync(new URL('vendor/',root),{recursive:true});
 for(const file of ['three.module.js','three.core.js']) cpSync(new URL(`node_modules/three/build/${file}`,root),new URL(`vendor/${file}`,root));
 cpSync(new URL('node_modules/three/LICENSE',root),new URL('vendor/THREE-LICENSE.txt',root));
+mkdirSync(new URL('downloads/',root),{recursive:true});
+execFileSync('zip',['-q','-r',fileURLToPath(new URL('downloads/pixo-focus-shield.zip',root)),'focus-shield'],{cwd:fileURLToPath(new URL('extension/',root))});
 console.log('Local 3D renderer prepared.');
