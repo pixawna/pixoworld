@@ -11,8 +11,17 @@ Open `pixo.config.js` and change:
 - `focus`: the default session length and the choices shown in settings.
 - `care`: water reminder times, meal time, and the daily water goal.
 - `starterTasks`: up to eight useful defaults for a new visitor.
+- `talk`: welcome, quick prompts, read-aloud default, reply overrides, and optional advanced AI settings. Defaults to no-key small talk with advanced settings hidden.
 
 Times use 24-hour `HH:MM` format. Water goals must be between 4 and 16. Focus lengths must be positive whole minutes.
+
+### Chat personality contract
+
+`talk.welcome` and `talk.prompts` are plain text. `{companion}` becomes `companion.name`. `talk.readAloud` is the initial checkbox value, not permission to start audio on page load. `talk.showAdvancedAI` must be explicitly `true` to expose the optional AI setup section; it never automatically connects.
+
+`talk.replies` maps these built-in intents to arrays of alternative replies: `hello`, `day`, `comfort`, `rest`, `water`, `food`, `focus`, `joke`, `about`, `thanks`, `bye`, `good`, `fallback`. Replies rotate across turns. Omitted/empty arrays retain built-in responses and their animation. Strings are limited to 500 characters and arrays to eight entries. Invalid values fall back safely. Matching is English; changing copy alone does not add another language or an AI model. Add new matching logic in `small-talk.js` if needed.
+
+The companion name is used in chat labels, greetings, and built-in replies. It does not rename the voxel model, its hat, or every Pixo-specific room/desktop label; change those separately for a full rebrand. Both examples include chat personalities. These changes require no platform schema edits or credentials.
 
 ## Change the character
 

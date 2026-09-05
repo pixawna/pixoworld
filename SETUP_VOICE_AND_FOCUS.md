@@ -10,9 +10,11 @@ Open **Talk** (or the music-note button), type a message, and press **Send messa
 
 **Tap to speak** listens to one English message at a time, only after you click and grant browser permission. It stops before Pixo replies. There is no continuous background listening. Closing the panel, switching panels, hiding the page, or pressing Stop audio cancels listening and speech. If recognition is unsupported, denied, offline, or fails, typing remains available. As [MDN documents](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition), some browsers send microphone audio to their own recognition service; no API key does not mean fully offline audio. Chat text/replies are kept only in tab memory (last 20 messages), are never automatically sent to PageLove or the AI server, and clear on reload or **Clear chat**.
 
-The reply engine is `small-talk.js`; the UI is `small-talk-panel.js`. Both ship in the static build. No new dependency is required.
+Customize chat welcome, prompts, replies, and read-aloud defaults in `pixo.config.js` under `talk`. The reply engine is `small-talk.js`; the UI is `small-talk-panel.js`. Both ship in the static build. No new dependency is required.
 
 ## Optional advanced AI voice
+
+The reusable template hides AI setup by default. Set `talk.showAdvancedAI: true` in `pixo.config.js` only if you want to offer this optional connection. Small talk remains the default even when that section is enabled.
 
 The client uses the official [OpenAI WebRTC call flow](https://developers.openai.com/api/docs/guides/realtime-webrtc). Pixo listens through the microphone and replies with streamed AI-generated speech. Microphone access starts only from the Start conversation button. Mute, End call, navigation cleanup, connection timeouts, and a ten-minute call limit are implemented. Transcripts are shown temporarily and are not saved by Pixo. Sharing saved memories is separately opt-in for each call.
 
@@ -23,7 +25,7 @@ No provider key or server is configured by the template. Until those are supplie
 1. Copy `server/.env.example` to `server/.env` (ignored by Git).
 2. Add `OPENAI_API_KEY` from your own OpenAI project and set `PIXO_VOICE_ACCESS_CODE` to a separate random value of at least 16 characters. That code is for accessing your server; it is not the provider API key.
 3. Run `npm run voice:server` with Node 20.12+.
-4. Open Talk → **Advanced AI voice (optional)** → **Open AI voice settings**, use `http://127.0.0.1:8787/session`, and enter the access code. A browser may request local-network access. Prefer a public HTTPS endpoint for use beyond your own computer.
+4. After enabling `talk.showAdvancedAI`, open Talk → **Advanced AI voice (optional)** → **Open AI voice settings**, use `http://127.0.0.1:8787/session`, and enter the access code. A browser may request local-network access. Prefer a public HTTPS endpoint for use beyond your own computer.
 
 For hosting, run `server/voice-server.mjs` behind HTTPS on a Node-capable service, provide the environment variables using its secret settings, and set `PIXO_VOICE_BIND=0.0.0.0` only in that hosted environment. Set `PIXO_ALLOWED_ORIGINS` to your exact PageLove origin, with no wildcard. The site’s voice form accepts the deployed `/session` URL; it saves only that URL, never the access code.
 

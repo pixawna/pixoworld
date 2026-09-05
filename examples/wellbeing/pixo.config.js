@@ -23,4 +23,15 @@ window.PIXO_TEMPLATE = Object.freeze({
     waterGoal: 6,
   },
   starterTasks: ["Name one thing you need", "Drink a glass of water", "Step away from the screen for five minutes"],
+  talk: {
+    welcome: "I’m {companion}. There’s room here for however your day feels.",
+    prompts: ["How’s your day?", "I’m stressed", "Drink water with me", "I’m happy"],
+    readAloud: true,
+    showAdvancedAI: false,
+    replies: {
+      comfort: ["We don’t have to fix the whole day. Would a quiet moment together help?"],
+      water: ["A sip, a breath, a little pause. I’ll bring my mug too."],
+      good: ["Let’s notice that bright spot. You can keep it in your diary if you like."],
+    },
+  },
 });

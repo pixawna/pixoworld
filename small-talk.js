@@ -1,5 +1,31 @@
 // Deliberately scripted: no network, provider, or automatic memory writes.
-export function smallTalkReply(input, turn = 0) {
+export const TALK_INTENTS = Object.freeze(['hello', 'day', 'comfort', 'rest', 'water', 'food', 'focus', 'joke', 'about', 'thanks', 'bye', 'good', 'fallback']);
+
+export function talkConfig(template = {}) {
+  const config = template?.talk || {};
+  const validText = value => typeof value === 'string' && value.trim() && value.length <= 500;
+  const name = validText(template?.companion?.name) ? template.companion.name.trim().slice(0, 60) : 'Pixo';
+  const list = value => Array.isArray(value) ? value.filter(validText).slice(0, 8) : [];
+  const prompts = list(config.prompts);
+  return {
+    name, welcome: validText(config.welcome) ? config.welcome : 'Hi, friend! How’s your day going?',
+    prompts: prompts.length ? prompts : [`Hi ${name}`, 'How’s your day?', 'I’m tired', 'Tell me a joke'],
+    readAloud: config.readAloud !== false,
+    showAdvancedAI: config.showAdvancedAI === true,
+    replies: Object.fromEntries(TALK_INTENTS.map(intent => [intent, list(config.replies?.[intent])])),
+  };
+}
+
+export function smallTalkReply(input, turn = 0, template = {}) {
+  const index = Number.isSafeInteger(turn) && turn >= 0 ? turn : 0;
+  const result = builtinReply(input, index);
+  if (!result) return null;
+  const config = talkConfig(template), alternatives = config.replies[result.intent];
+  const text = alternatives.length ? alternatives[index % alternatives.length] : result.text;
+  return {...result, text: text.replace(/\{companion\}|\bPixo\b/g, () => config.name)};
+}
+
+function builtinReply(input, turn) {
   const text = String(input).slice(0, 500).toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
   const reply = (intent, messages, behavior = 'idle') => ({intent, text: messages[turn % messages.length], behavior});
   if (!text) return null;

@@ -23,4 +23,15 @@ window.PIXO_TEMPLATE = Object.freeze({
     waterGoal: 8,
   },
   starterTasks: ["Choose today’s lesson", "Review one difficult idea", "Write a three-line recap"],
+  talk: {
+    welcome: "I’m {companion}. I saved your study spot. What are we learning today?",
+    prompts: ["Hi {companion}", "Let’s study", "I’m tired", "Tell me a joke"],
+    readAloud: false,
+    showAdvancedAI: false,
+    replies: {
+      hello: ["Hey, study friend. One small chapter at a time?"],
+      focus: ["Pick one idea to understand, not a whole textbook. Open Focus when you want to start."],
+      rest: ["Your brain deserves a breather. Look away from the screen for a moment."],
+    },
+  },
 });

@@ -9,6 +9,7 @@
     "predev": "node scripts/prepare-room.mjs",
     "dev": "python3 -m http.server 4173",
     "build": "node scripts/build-site.mjs",
+    "package:pagelove": "npm run build && node scripts/package-pagelove.mjs",
     "test": "node --test test/*.test.mjs",
     "voice:server": "node --env-file=server/.env server/voice-server.mjs",
     "deploy": "npm run build && node scripts/deploy.mjs",

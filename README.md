@@ -1,8 +1,10 @@
 # Pixo, a PageLove companion template
 
-Build a tiny digital companion that helps people focus, remember their day and care for themselves—without a database, framework, or account system.
+Fork a cozy 3D companion, edit one configuration file, and deploy it to PageLove. Includes focus, care, private memories, and friendly small talk—no AI API key, database, or account system needed for the core experience.
 
 [Try the live Pixo companion](https://heat-flip-3234.onpagelove.com/) · [Read the template guide](./TEMPLATE_GUIDE.md)
+
+**Start here:** [Make your own companion on PageLove](./PAGELOVE_QUICKSTART.md). Choose a study-buddy or wellbeing example, customize `pixo.config.js`, and run `npm run package:pagelove` for an upload-ready ZIP.
 
 ![Pixo companion demo](./assets/demo_preview.gif)
 
@@ -63,6 +65,13 @@ window.PIXO_TEMPLATE = Object.freeze({
   focus: { defaultMinutes: 25, options: [15, 25, 45, 60] },
   care: { waterTimes: ["10:30", "13:00", "15:30"], mealTime: "17:00", waterGoal: 8 },
   starterTasks: ["Choose today’s main thing", "Drink a glass of water", "Take a quiet stretch break"],
+  talk: {
+    welcome: "Hi, I’m {companion}. How’s your day?",
+    prompts: ["Hi {companion}", "I’m tired", "Tell me a joke"],
+    readAloud: true,
+    showAdvancedAI: false,
+    replies: { hello: ["Hello, friend! Want to sit together for a moment?"] },
+  },
 });
 ```
 
@@ -130,7 +139,7 @@ npm run deploy
 
 `.env` and `.apikey` are ignored by Git. Deployment uses conditional WebDAV writes to avoid silently overwriting concurrent changes and uploads `index.html` last.
 
-To upload manually, run `npm run build` and upload the contents of `dist/` to the PageLove host. Verify both the root route and an interaction such as logging a glass of water.
+To upload manually, run `npm run package:pagelove`, extract `artifacts/pixo-pagelove-template.zip`, and upload its contents to the PageLove host root. Alternatively, upload the contents of `dist/` after `npm run build`. Verify both the root route and an interaction such as logging a glass of water. No AI key is needed; scripted deployment uses only the owner's PageLove deployment credential.
 
 The build includes key-free small talk and a downloadable extension ZIP (requires the `zip` utility), but deliberately excludes `server/` and all environment files. No voice server is needed for small talk. For optional advanced AI voice, deploy the server separately and follow [SETUP_VOICE_AND_FOCUS.md](./SETUP_VOICE_AND_FOCUS.md).
 

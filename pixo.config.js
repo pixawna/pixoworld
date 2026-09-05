@@ -28,6 +28,18 @@ window.PIXO_TEMPLATE = Object.freeze({
     defaultMinutes: 25,
     options: [15, 25, 45, 60],
   },
+  // No AI key or server is needed. All copy is plain text, never HTML.
+  talk: {
+    welcome: "Hi, I’m {companion}. How’s your day going?",
+    prompts: ["Hi {companion}", "How’s your day?", "I’m tired", "Tell me a joke"],
+    readAloud: true,
+    showAdvancedAI: false,
+    // Override any built-in intent: hello, day, comfort, rest, water, food,
+    // focus, joke, about, thanks, bye, good, fallback. Omitted intents keep defaults.
+    replies: {
+      hello: ["Hi, friend! It’s nice to have you here. How’s your day going?", "Hey! Pull up a little chair. How are you feeling today?"],
+    },
+  },
   care: {
     waterTimes: ["10:30", "13:00", "15:30"],
     mealTime: "17:00",

@@ -1,7 +1,7 @@
 import { dateKey, daysTogether, dayPhase, restoreWorld, collection } from './room-model.js';
 import {PixoVoice} from './voice-client.js?v=game2';
 import {createFocusShield} from './focus-shield.js?v=game2';
-import {createSmallTalkPanel} from './small-talk-panel.js?v=smalltalk1';
+import {createSmallTalkPanel} from './small-talk-panel.js?v=template2';
 
 const $ = selector => document.querySelector(selector);
 if (!window.PixoApp) await new Promise(resolve => document.addEventListener('pixo:ready',resolve,{once:true}));
@@ -47,6 +47,7 @@ const voice=new PixoVoice((state,message)=>{
   $('#voice-mute').setAttribute('aria-pressed',String(voice?.muted||false));
 },text=>{voiceTranscript=text;if($('#voice-transcript'))$('#voice-transcript').textContent=text;speak(text,app.timer().running?'working':'idle',8000);},value=>scene?.setSpeaking(value));
 const smallTalk=createSmallTalkPanel({
+  template:window.PIXO_TEMPLATE,
   onReply:reply=>{
     const behavior=app.timer().running?'working':reply.behavior;
     if(!app.timer().running&&['water','eating'].includes(behavior))setView('table');
