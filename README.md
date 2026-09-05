@@ -6,7 +6,9 @@ Fork a cozy 3D companion, edit one configuration file, and deploy it to PageLove
 
 **Start here:** [Make your own companion on PageLove](./PAGELOVE_QUICKSTART.md). Choose a study-buddy or wellbeing example, customize `pixo.config.js`, and run `npm run package:pagelove` for an upload-ready ZIP.
 
-![Pixo companion demo](./assets/demo_preview.gif)
+[![Pixo’s 3D room — latest demo](./assets/final_video_preview.gif)](./assets/final_video.mp4)
+
+[Watch the full demo with sound](./assets/final_video.mp4) · Animated preview plays at 3× speed.
 
 ## Why this template is useful
 
